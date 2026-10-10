@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>MCModz</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--ink:#0f0f0f;--mute:#606060;--line:#e3e3e3;--chip:#f2f2f2;--sel:#e8e8e8;--selt:#0f0f0f;--acc:#cc0000;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0e1430;--ink:#fff;--mute:#a9b2d6;--line:#2a345f;--chip:#1c2650;--sel:#fff;--selt:#0e1430;--acc:#ff4e45}}
+:root[data-theme="dark"]{--bg:#0e1430;--ink:#fff;--mute:#a9b2d6;--line:#2a345f;--chip:#1c2650;--sel:#fff;--selt:#0e1430;--acc:#ff4e45}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.4 Roboto,system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;text-align:left}
+:focus-visible{outline:2px solid var(--ink);outline-offset:2px}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+aside{padding:12px;position:sticky;top:0;height:100vh;overflow:auto}
+.logo{display:flex;align-items:center;gap:8px;padding:6px 12px 16px;font-weight:700;font-size:22px;font-family:"Chakra Petch",system-ui,sans-serif}
+.mark{background:var(--acc);color:#fff;border-radius:7px;padding:3px 6px;font-size:13px;font-weight:800}
+.ni{display:flex;align-items:center;gap:20px;width:100%;padding:10px 12px;border-radius:12px;font-size:16px;font-family:"Chakra Petch",system-ui,sans-serif;font-weight:500}
+.ni:hover{background:var(--chip)}
+.ni.on{background:var(--sel);color:var(--selt);font-weight:600}
+.ni svg{width:24px;height:24px;fill:currentColor;flex:none}
+.ni em{margin-left:auto;font-style:normal;color:var(--mute);font-size:13px}
+.ni.on em{color:inherit;opacity:.7}
+hr{border:0;border-top:1px solid var(--line);margin:12px 0}
+.prog{padding:16px 12px;color:var(--mute);font-size:13px}
+.pb{height:4px;background:var(--chip);border-radius:4px;margin-top:8px;overflow:hidden}
+.pb i{display:block;height:100%;background:#2a9a58;width:0}
+main{padding:12px 24px 48px;min-width:0}
+header{display:flex;gap:12px;align-items:center;justify-content:space-between;margin-bottom:18px}
+.search{display:flex;align-items:center;gap:8px;flex:1;max-width:560px;border:1px solid var(--line);border-radius:99px;padding:0 14px;height:40px}
+.search svg{width:20px;height:20px;fill:var(--mute);flex:none}
+.search input{flex:1;min-width:0;background:none;border:0;outline:0}
+.create{display:flex;align-items:center;gap:6px;background:var(--chip);border-radius:99px;height:40px;padding:0 16px;font-weight:600;white-space:nowrap}
+.create svg{width:20px;height:20px;fill:currentColor}
+h2{font-size:20px;font-weight:700;margin:0 0 16px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:24px 16px}
+.tw{position:relative}
+.thumb{display:grid;place-items:center;width:100%;aspect-ratio:16/9;border-radius:12px;color:rgba(255,255,255,.92);font-weight:800;font-size:44px;letter-spacing:1px}
+.badge{position:absolute;right:8px;bottom:8px;background:rgba(0,0,0,.78);color:#fff;border-radius:6px;padding:2px 7px;font-size:12px;font-weight:600}
+.badge:hover{background:#000}
+.info{display:flex;gap:12px;margin-top:12px}
+.av{width:36px;height:36px;border-radius:50%;background:var(--chip);display:grid;place-items:center;font-weight:700;flex:none}
+.ct{font-weight:600;font-size:16px;line-height:1.3;overflow-wrap:anywhere;padding:0}
+.meta{color:var(--mute);font-size:13px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.empty{grid-column:1/-1;text-align:center;color:var(--mute);padding:56px 8px}
+dialog{background:var(--bg);color:var(--ink);border:0;border-radius:16px;padding:22px;width:min(440px,92vw)}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+dialog h3{margin:0 0 14px;font-size:18px}
+dialog label{display:block;color:var(--mute);font-size:13px;margin:10px 0 4px}
+dialog input,dialog select,dialog textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px}
+dialog textarea{min-height:80px;resize:vertical}
+.btns{display:flex;gap:8px;margin-top:18px;justify-content:flex-end}
+.btns button{border-radius:99px;padding:9px 18px;font-weight:600;background:var(--chip)}
+.btns .go{background:var(--ink);color:var(--bg)}
+.btns .del{margin-right:auto;color:var(--acc)}
+@media(max-width:760px){
+.app{display:block}
+aside{position:static;height:auto;padding:8px 12px 0}
+.logo{padding:4px 4px 8px}
+.prog,hr{display:none}
+nav{display:flex;gap:8px;overflow-x:auto;padding-bottom:8px}
+.ni{width:auto;gap:0;padding:6px 14px;border-radius:8px;background:var(--chip);white-space:nowrap}
+.ni svg,.ni em{display:none}
+main{padding:8px 12px 40px}
+.create span{display:none}
+.create{padding:0 12px}
+}
+:root:root:root{color-scheme:dark;--bg:#000;--ink:#fff;--mute:#9a9a9a;--line:#262626;--chip:#121212;--sel:#fff;--selt:#000;--acc:#ff4e45}
+.pc{background:var(--chip);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pc b{font-size:18px;overflow-wrap:anywhere}
+.pc .row{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.pc button{background:var(--ink);color:var(--bg);border-radius:99px;padding:6px 14px;font-weight:600;font-size:14px}
+.pc button.alt{background:var(--bg);color:var(--ink);border:1px solid var(--line)}
+.mt{margin-left:8px;background:var(--chip);border:0;border-radius:99px;padding:8px 14px;color:var(--ink)}
+.sq{width:100%;max-width:420px;margin:10px 0;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:9px 14px;color:var(--ink)}
+.cw{position:relative;padding-left:44px}
+.cw #hl{position:absolute;inset:0 0 0 44px;margin:0;padding:10px;border:1px solid transparent;font:14px/1.6 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;white-space:pre;overflow:hidden;color:var(--ink);tab-size:2;pointer-events:none}
+.cw #src{position:relative;z-index:1;display:block;width:100%;background:transparent;color:transparent;caret-color:var(--ink)}
+#hl i{font-style:normal}#hl .c{color:#6a9955}#hl .s{color:#7ec850}#hl .k{color:#ff7b72}#hl .n{color:#f0a050}
+.aib{background:var(--ink);color:var(--bg);border-radius:99px;padding:8px 16px;font-weight:600;align-self:flex-start}
+.cw #ln{position:absolute;left:0;top:0;bottom:0;width:40px;margin:0;padding:10px 6px;text-align:right;color:var(--mute);font:14px/1.6 "JetBrains Mono",ui-monospace,monospace;overflow:hidden;white-space:pre;pointer-events:none}
+.tabs{display:flex;gap:4px;overflow-x:auto}
+.tbn{background:var(--chip);border-radius:8px 8px 0 0;padding:6px 10px;font-size:13px;white-space:nowrap}
+.tbn.on{background:var(--sel);color:var(--selt)}
+.tbn span{margin-left:6px;color:var(--mute)}
+#code.big{position:fixed;inset:0;z-index:40;background:var(--bg);padding:12px;overflow:auto}
+#code.big #src{min-height:80vh}
+.mt[aria-pressed=true]{background:var(--sel);color:var(--selt)}
+.stage{height:260px;display:grid;place-items:center;perspective:600px;border:1px solid var(--line);border-radius:12px;margin:10px 0;background:var(--chip);overflow:hidden}
+.pivot{transform-style:preserve-3d;transform:rotateX(-20deg) rotateY(-30deg)}
+.cube{position:relative;width:60px;height:60px;transform-style:preserve-3d}
+.cube i{position:absolute;inset:0;border:2px solid #7ec850;background:rgba(126,200,80,.25)}
+.cube i:first-child{background:rgba(255,255,255,.55)}
+.kr{display:grid;grid-template-columns:repeat(7,minmax(0,1fr)) 28px;gap:4px;margin-bottom:4px;font-size:13px}
+.kr input{min-width:0;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 3px;color:var(--ink)}
+.ur{display:grid;grid-template-columns:1.3fr 1.3fr repeat(4,minmax(0,.7fr)) 34px 26px;gap:4px;margin-bottom:4px}
+.ur input[type=text],.ur input:not([type]),.ur input[type=number]{min-width:0;width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;padding:5px 3px;color:var(--ink)}
+.ur input[type=color]{width:34px;padding:0;border:0;background:none}
+.uis{position:relative;width:min(100%,480px);aspect-ratio:16/9;background:#1a1a1a;border:1px solid var(--line);border-radius:8px;margin:10px 0;overflow:hidden}
+.pc .ci{flex:1;min-width:0;background:var(--bg);border:1px solid var(--line);border-radius:99px;padding:6px 12px;color:var(--ink)}
+.bf{display:grid;gap:8px;margin:10px 0}
+.bf label{color:var(--mute);font-size:13px;display:grid;gap:3px}
+.bf input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;color:var(--ink);min-width:0;width:100%}
+.lr{display:grid;grid-template-columns:2fr 1fr 1fr 1fr 28px;gap:4px}
+:root.light:root:root{color-scheme:light;--bg:#fff;--ink:#0f0f0f;--mute:#606060;--line:#e3e3e3;--chip:#f2f2f2;--sel:#0f0f0f;--selt:#fff}
+.cube3{position:relative;width:96px;height:96px;transform-style:preserve-3d}
+.cube3 i{position:absolute;inset:0;background-size:100% 100%;image-rendering:pixelated;background-color:#444}
+.cube3 i:nth-child(1){transform:translateZ(48px)}.cube3 i:nth-child(2){transform:rotateY(180deg) translateZ(48px)}.cube3 i:nth-child(3){transform:rotateY(90deg) translateZ(48px)}.cube3 i:nth-child(4){transform:rotateY(-90deg) translateZ(48px)}.cube3 i:nth-child(5){transform:rotateX(90deg) translateZ(48px)}.cube3 i:nth-child(6){transform:rotateX(-90deg) translateZ(48px)}
+main{max-width:980px}
+h2{font-size:24px;margin:6px 0 4px}h2+.meta{margin-bottom:14px}
+.hg{font-size:13px;color:var(--mute);font-weight:600;margin:22px 0 8px}
+.gl{font-size:12px;color:var(--mute);padding:16px 12px 4px}
+.box{background:var(--chip);border:1px solid var(--line);padding:18px;border-radius:14px;gap:4px}
+.box b{font-size:17px}.box span{font-size:13px}
+.box:hover{border-color:var(--mute);outline:0}
+.pc,.tree,.out,.stage{border:1px solid var(--line);background:var(--chip)}
+.ni{padding:8px 12px;border-radius:10px;gap:14px}
+input:focus,select:focus,textarea:focus{outline:2px solid #2f9e5c;outline-offset:0}
+.go2,.go,.btns .go,.row2 .go2,.aib{background:#2f9e5c!important;color:#fff!important}
+.row2 button,.tb button{border-radius:10px}
+.seg{border-radius:12px}.seg button{border-radius:9px}
+.more{margin-top:8px}.more summary{cursor:pointer;color:var(--mute);font-size:13px;padding:4px 0}
+.tab button{background:var(--chip);border-radius:8px;padding:2px 10px;margin-left:6px;font-size:13px}
+#fr{display:flex;flex-direction:column;margin-bottom:6px}
+@media(max-width:760px){.gl{display:none}}
+.rg{display:grid;grid-template-columns:repeat(3,minmax(0,90px));gap:6px;margin:12px 0}
+.rg input,.row2 input{background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:8px;min-width:0;width:100%;color:var(--ink)}
+.row2{display:flex;gap:6px;margin-bottom:10px;align-items:center}
+.row2 button{background:var(--chip);border-radius:99px;padding:8px 16px;font-weight:600;white-space:nowrap}
+.row2 .go2{background:var(--ink);color:var(--bg)}
+.out{background:var(--chip);border-radius:12px;padding:12px;overflow:auto;font:13px/1.5 "JetBrains Mono",ui-monospace,monospace;margin:10px 0}
+#load{position:fixed;inset:0;background:#000;z-index:60;display:grid;place-items:center;padding:24px}
+#load .pb{height:8px}
+#lb{transition:width .3s}
+@media(prefers-reduced-motion:reduce){#lb{transition:none}}
+#gate{position:fixed;inset:0;background:#000;z-index:50;display:grid;place-items:center;padding:24px}
+.gc{max-width:340px;width:100%;display:flex;flex-direction:column;gap:12px}
+.alt2{border:1px solid var(--line);border-radius:99px;padding:10px 20px;font-weight:600;text-align:center}
+[hidden]{display:none!important}
+.boxes{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:8px}
+.box{background:var(--chip);border-radius:16px;padding:32px 22px;display:flex;flex-direction:column;gap:8px}
+.box b{font-size:22px}.box span{color:var(--mute)}
+.box:hover{outline:2px solid var(--line)}
+.seg{display:inline-flex;background:var(--chip);border-radius:99px;padding:3px;margin-bottom:12px}
+.seg button{padding:6px 18px;border-radius:99px;font-weight:600}
+.seg .on{background:var(--sel);color:var(--selt)}
+.log{display:flex;flex-direction:column;gap:12px;margin-bottom:12px}
+.msg{background:var(--chip);border-radius:12px;padding:12px;overflow-wrap:anywhere;white-space:pre-wrap}
+.msg.me{align-self:flex-end;background:var(--sel);color:var(--selt);max-width:85%}
+.msg button{background:var(--ink);color:var(--bg);border-radius:99px;padding:6px 14px;font-weight:600;margin-top:10px}
+.ask{display:flex;gap:8px;align-items:flex-end}
+.ask textarea{flex:1;min-height:56px;resize:vertical;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px}
+.go2{background:var(--ink);color:var(--bg);border-radius:99px;padding:10px 20px;font-weight:600}
+.ide{display:grid;grid-template-columns:200px 1fr;gap:12px}
+.tree{border:1px solid var(--line);border-radius:12px;padding:8px;min-width:0}
+.tb{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+.tb input{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:6px 8px}
+.tb button{background:var(--chip);border-radius:99px;padding:4px 12px;font-size:13px;font-weight:600}
+.fi{display:block;width:100%;padding:4px 8px;border-radius:8px;font-size:14px;overflow-wrap:anywhere}
+.fi.on{background:var(--sel);color:var(--selt)}
+.ed{display:flex;flex-direction:column;gap:8px;min-width:0}
+.tab{color:var(--mute);font-size:14px}
+#src{min-height:72vh;font:14px/1.6 "JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px;white-space:pre;overflow:auto;resize:vertical;tab-size:2}
+.errs{display:flex;flex-direction:column;gap:6px}
+.er{border-left:4px solid var(--acc);background:var(--chip);border-radius:8px;padding:8px 10px;font-size:14px}
+.er button{background:var(--ink);color:var(--bg);border-radius:99px;padding:2px 10px;font-size:12px;font-weight:600;margin-top:4px}
+.ok{color:#2a9a58;font-size:14px}
+@media(max-width:760px){.ide{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside>
+  <div class="logo"><span class="mark">MC</span>MCModz<button id="stg" style="margin-left:auto;font-size:13px;font-weight:600;background:var(--chip);border-radius:99px;padding:4px 12px">Settings</button></div>
+  <nav id="nav"></nav><button class="prog" id="who">Guest</button>
+  <div class="prog"><span id="pt"></span><div class="pb"><i id="pf"></i></div></div>
+</aside>
+<main>
+  <header id="hd">
+    <div class="search"><svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg><input id="q" placeholder="Search mods" aria-label="Search mods"></div>
+    <button class="create" id="new"><svg viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg><span>New mod</span></button>
+  </header>
+  <section id="hub" hidden><h2>MCModz</h2><div class="boxes">
+<button class="box" data-k="ai"><b>AI Creation</b><span>Describe a mod and McAI writes the code for you.</span></button>
+<button class="box" data-k="code"><b>Code Creations</b><span>Make folders and files. Syntax errors show up with fixes.</span></button><button class="box" data-k="pub"><b>Public Mods</b><span>Browse mods people shared and download them.</span></button></div></section>
+<section id="ai" hidden><h2>McAI</h2>
+<div class="seg" id="edn"><button data-ed="Java" class="on">Java</button><button data-ed="Bedrock">Bedrock</button></div><select class="mt" id="mt" aria-label="McAI model"><option value="quick">Fast</option><option value="default">Balanced</option><option value="complex" selected>Max</option></select><button class="mt" id="em" aria-pressed="false">Edit my project</button><select class="mt vsel" aria-label="Minecraft version"></select>
+<div class="log" id="log"><div class="msg">Hi, I'm McAI. Pick Java or Bedrock, then tell me the mod you want.</div></div>
+<div class="ask"><textarea id="ap" placeholder="Describe your mod, like a pickaxe that smelts ores" aria-label="Describe your mod"></textarea><button class="go2" id="send">Build</button></div></section>
+<section id="code" hidden><h2>Code Creations</h2><div class="seg" id="cmode"><button data-ed="Java" class="on">Java</button><button data-ed="Bedrock">Bedrock</button></div><select class="mt vsel" aria-label="Minecraft version"></select><div class="ide">
+<div class="tree"><div class="tb"><input id="nm" placeholder="Name, like src/Item.java" aria-label="New file or folder name"><button id="nf">New file</button><button id="nd">New folder</button><button id="dl">Delete</button><button id="st">Starter files</button><button id="dp">Download</button><button id="fsb">Fullscreen</button><button id="im">Import zip</button><input type="file" id="iz" accept=".zip" hidden><button id="bk">Backup</button><button id="pk">Pack add-on</button><button id="pv" hidden>Save private</button><button id="pl" hidden>Load private</button><button id="sh">Share</button></div><input id="fq" class="sq" placeholder="Search all files" aria-label="Search all files" style="width:100%;margin:6px 0"><div id="fr"></div><div id="ft"></div></div>
+<div class="ed"><div class="tabs" id="tabs"></div><div class="tab" id="tab"><span id="tabn"></span><button id="un2">Undo</button><button id="rd2">Redo</button></div><div class="cw"><pre id="ln" aria-hidden="true"></pre><pre id="hl" aria-hidden="true"></pre><textarea id="src" spellcheck="false" aria-label="Code editor"></textarea></div><div class="errs" id="errs"></div></div></div></section>
+<section id="pub" hidden><h2>Public Mods</h2>
+<div class="meta">Bedrock: rename the downloaded .zip to .mcpack and open it to import. Java: you get the source project; build it with Gradle to make the .jar.</div>
+<input id="ps" class="sq" placeholder="Search public mods" aria-label="Search public mods"><div class="meta" id="pnote"></div><div class="boxes" id="plist"></div></section>
+<dialog id="pd"><h3>Share to Public Mods</h3><div class="meta" id="pdf"></div>
+<label for="pdt">Title</label><input id="pdt" maxlength="60">
+<label for="pdd">What does it do?</label><textarea id="pdd" maxlength="300"></textarea><label for="pdtg">Tags, separated by commas</label><input id="pdtg" maxlength="80"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="pdcv" style="width:auto"> Use my Texture Editor drawing as the cover</label>
+<div class="btns"><button id="pdx">Cancel</button><button class="go" id="pdg">Share</button></div></dialog>
+<section id="rec" hidden><h2>Recipe Builder</h2><div class="seg" id="rmode"><button data-ed="Java" class="on">Java</button><button data-ed="Bedrock">Bedrock</button></div><select class="mt vsel" aria-label="Minecraft version"></select>
+<div class="meta">Type item names like iron_ingot. Leave a slot empty for nothing. Targets Minecraft 1.20.</div><div class="rg" id="rg"></div>
+<div class="row2"><input id="rr" placeholder="Result, like ruby_sword"><input id="rn" type="number" min="1" max="64" value="1" aria-label="Result count" style="max-width:70px"><input id="rm" value="mymod" aria-label="Mod id"></div>
+<pre class="out" id="ro"></pre><div class="row2"><button class="go2" id="ra">Add to my files</button></div></section>
+<section id="tex" hidden><h2>Texture Editor</h2>
+<div class="row2"><input type="color" id="tc" value="#7ec850" aria-label="Color" style="width:56px"><button id="te">Eraser</button><button id="tcl">Clear</button></div>
+<canvas id="cv" width="16" height="16" style="width:min(100%,384px);image-rendering:pixelated;border:1px solid var(--line);touch-action:none;background:#1a1a1a"></canvas>
+<div class="row2" style="margin-top:10px"><input id="tn" placeholder="File name, like ruby"><button class="go2" id="tadd">Add to my files</button></div></section>
+<section id="anim" hidden><h2>Animation Creator</h2>
+<div class="meta">Set position and rotation keyframes and watch the cube move. The preview is approximate. Exports a Bedrock animation file.</div>
+<div class="stage"><div class="pivot"><div class="cube" id="cube"><i style="transform:translateZ(30px)"></i><i style="transform:rotateY(180deg) translateZ(30px)"></i><i style="transform:rotateY(90deg) translateZ(30px)"></i><i style="transform:rotateY(-90deg) translateZ(30px)"></i><i style="transform:rotateX(90deg) translateZ(30px)"></i><i style="transform:rotateX(-90deg) translateZ(30px)"></i></div></div></div>
+<div class="row2"><button class="go2" id="ap2">Play</button><input type="range" id="ts" min="0" max="1" step="0.01" value="0" aria-label="Time"><span id="tt">0.00s</span></div>
+<div class="meta" id="rd"></div>
+<div class="row2" style="margin-top:10px"><input id="al" type="number" step="0.1" min="0.1" value="1" aria-label="Length in seconds" style="max-width:80px"><label class="meta"><input type="checkbox" id="lp" checked style="width:auto"> Loop</label><input id="ab" value="root" aria-label="Bone name"><input id="an" placeholder="Animation name" aria-label="Animation name"></div>
+<div id="kf"></div><div class="row2"><button id="ak">Add keyframe</button><button class="go2" id="aadd">Add to my files</button></div></section>
+<section id="part" hidden><h2>Particle Animator</h2><div class="meta">Tune the particles and watch them. Exports a Bedrock particle file. The preview is approximate.</div>
+<canvas id="pc" width="360" height="240" style="width:min(100%,360px);background:#111;border:1px solid var(--line);border-radius:12px;margin:10px 0"></canvas>
+<div id="ppf"></div><div class="row2" style="margin-top:10px"><input id="pn" placeholder="Particle name"><button class="go2" id="pa">Add to my files</button></div></section>
+<section id="jui" hidden><h2>JSON UI Creator</h2><div class="meta">Add text and boxes, set position and size, and see the screen. Exports a Bedrock JSON UI file. Sizes use a 320 by 180 preview.</div>
+<div class="uis" id="uis"></div><div id="ul"></div>
+<div class="row2"><button id="ual">Add label</button><button id="uab">Add box</button></div>
+<div class="row2"><input id="un" placeholder="Screen name" value="my_screen"><button class="go2" id="uadd">Add to my files</button></div></section>
+<dialog id="wd"><h3>Before you download</h3><p class="meta">This mod is code made by another person. Read it before you run it, and only install mods you trust.</p><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="wc" style="width:auto"> I understand</label><div class="btns"><button id="wx">Cancel</button><button class="go" id="wgo" disabled>Download</button></div></dialog>
+<dialog id="wk"><h3>Welcome to MCModz</h3><div class="meta" id="wi"></div><p id="wt"></p><div class="btns"><button class="go" id="wn">Next</button></div></dialog>
+<section id="bld" hidden><h2>Loot, Block and Mob Builders</h2>
+<div class="seg" id="bt"><button data-bt="loot" class="on">Loot table</button><button data-bt="block">Block</button><button data-bt="mob">Mob</button></div>
+<div id="b_loot" class="bf"><label>Name<input id="ln1" value="my_loot"></label><label>Rolls<input id="lr" type="number" min="1" value="1"></label><div class="meta">Item, weight, min count, max count</div><div id="le"></div><div class="row2"><button id="lad">Add item</button></div></div>
+<div id="b_block" class="bf" hidden><label>Name<input id="bn" value="ruby_block"></label><label>Seconds to mine<input id="bh" type="number" step="0.5" value="3"></label><label>Light, 0 to 15 (Bedrock)<input id="bl" type="number" min="0" max="15" value="0"></label><label>Map color (Bedrock)<input id="bc" type="color" value="#e0115f" style="width:56px;padding:0"></label></div>
+<div id="b_mob" class="bf" hidden><label>Name<input id="mn" value="ruby_golem"></label><label>Health<input id="mh" type="number" value="20"></label><label>Speed<input id="ms" type="number" step="0.05" value="0.25"></label><label>Attack damage<input id="md" type="number" value="3"></label><div class="meta" id="mj"></div></div>
+<pre class="out" id="bo"></pre><div class="row2"><button class="go2" id="badd">Add to my files</button></div></section>
+<section id="tpl" hidden><h2>Starter Ideas</h2><div class="meta">Pick one and McAI gets the request ready for your edition and version. Needs an account.</div><div class="boxes" id="tg"></div></section>
+<section id="mdl" hidden><h2>Model Editor</h2><div class="meta">Add cubes and see them in 3D. Exports a Bedrock geometry file. The preview is approximate.</div>
+<div class="stage" style="height:280px"><div class="pivot" id="mp3"><div id="mw" style="transform-style:preserve-3d"></div></div></div>
+<div class="row2"><input type="range" id="mr" min="-180" max="180" value="-30" aria-label="Rotate the model"></div>
+<div class="meta">x, y, z, width, height, depth</div><div id="mc"></div>
+<div class="row2"><button id="mad">Add cube</button></div>
+<div class="row2"><input id="mnm" value="my_model" aria-label="Model name"><button class="go2" id="madd">Add to my files</button></div></section>
+<section id="lng" hidden><h2>Language Files</h2><div class="meta">Names shown in game. Java keys look like item.mymod.ruby. Bedrock keys look like item.mymod:ruby.</div>
+<div class="row2"><input id="lc" value="en_US" aria-label="Language code" style="max-width:110px"></div><div id="lg"></div>
+<div class="row2"><button id="lga">Add line</button><button class="go2" id="lgx">Add to my files</button></div></section>
+<dialog id="mpd"><h3 id="mpt"></h3><div id="mpb" style="max-height:60vh;overflow:auto"></div><div class="btns"><button id="mpx">Close</button></div></dialog>
+<dialog id="sd"><h3>Settings</h3><label for="sz">Text size</label><select id="sz"><option value="15">Normal</option><option value="17">Large</option><option value="19">Extra large</option></select><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="slt" style="width:auto"> Light theme</label><p class="meta">Shortcuts: Ctrl+Enter sends to McAI. Tab in the editor adds two spaces.</p><div class="btns"><button class="go" id="sx">Done</button></div></dialog>
+<section id="cow" hidden><h2>Co-work</h2><div class="meta">Work on the same files with other people. Start a session and share the code, or join with a code. Everyone needs to be signed in with Contributor access.</div>
+<div class="row2"><button class="go2" id="cwh">Start session</button></div><div class="row2"><input id="cwj" placeholder="Enter a code" maxlength="12" aria-label="Session code"><button id="cwb">Join</button></div><div class="meta" id="cws"></div><div class="row2"><button id="cwl" hidden>Leave</button></div></section>
+<section id="scr" hidden><h2>Seed Commands</h2><div class="meta">Builds SeedCracker commands for Java. The syntax can change between versions, so check with Tab in game. Only use it where the world or server rules allow it.</div>
+<div class="bf"><label>Action<select id="sca"></select></label><label id="scl">Value<input id="scv"></label></div><pre class="out" id="sco"></pre><div class="row2"><button class="go2" id="scc">Copy</button></div></section>
+<section id="snd" hidden><h2>Sound Builder</h2><div class="meta">Register sound events for Java or Bedrock. Audio files can't be stored here, so add your .ogg files to the folder shown after you export.</div>
+<div class="meta">Event name, file name</div><div id="sg"></div><div class="row2"><button id="sga">Add sound</button></div><div class="meta" id="sgn"></div><div class="row2"><button class="go2" id="sgx">Add to my files</button></div></section>
+<section id="blk3" hidden><h2>Block Viewer</h2><div class="meta">Pick textures from your files, or your Texture Editor drawing, and see the block in 3D.</div>
+<div class="stage"><div class="pivot" id="bp"><div class="cube3" id="bc3"><i></i><i></i><i></i><i></i><i></i><i></i></div></div></div>
+<div class="bf"><label>Top<select id="bsT"></select></label><label>Sides<select id="bsS"></select></label><label>Bottom<select id="bsB"></select></label><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="bsp" checked style="width:auto"> Spin</label></div></section>
+<section id="lock" hidden><h2>Locked for guests</h2><p class="meta">AI Creation and Public Mods need a claude.ai account. Sign in to claude.ai, open this page again and choose your account.</p><div class="row2"><button class="go2" id="lk">Switch account</button></div></section>
+<div id="gate"><div class="gc"><div class="logo"><span class="mark">MC</span>MCModz</div><p class="meta" id="gm">Checking for an account...</p><button class="go2" id="ga" hidden>Continue</button><button class="alt2" id="gg">Continue as guest</button><div class="meta">Guests can plan mods and write code. AI Creation and Public Mods are locked.</div></div></div>
+<h2 id="title"></h2>
+  <div class="grid" id="grid"></div>
+</main>
+</div>
+
+<dialog id="dlg">
+  <form id="f">
+    <h3 id="dt">New mod</h3>
+    <label for="dn">Mod name</label><input id="dn" maxlength="80" required>
+    <label for="dw">Who's on it</label><input id="dw" maxlength="40">
+    <label for="ds">Status</label><select id="ds"><option>Idea</option><option>Planned</option><option>Building</option><option>Shipped</option></select>
+    <label for="dx">Notes</label><textarea id="dx" maxlength="400" placeholder="Features, version, loader (Fabric or Forge)"></textarea>
+    <div class="btns"><button type="button" class="del" id="del">Delete</button><button type="button" id="cx">Cancel</button><button class="go" type="submit">Save</button></div>
+  </form>
+</dialog>
+
+<script>
+const ST=["Idea","Planned","Building","Shipped"];
+const COL={Idea:"#5b6fc4",Planned:"#c58a10",Building:"#d1532b",Shipped:"#2a9a58"};
+const LBL={All:"Home",Idea:"Ideas",Planned:"Planned",Building:"Building",Shipped:"Shipped"};
+const P={
+home:"M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z",
+search:"M15.5 14h-.79l-.28-.27A6.47 6.47 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z",
+Idea:"M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7z",
+Planned:"M17 12h-5v5h5v-5zM16 1v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-1V1h-2zm3 18H5V8h14v11z",
+Building:"M22.7 19l-9.1-9.1c.9-2.3.4-5-1.5-6.9-2-2-5-2.4-7.4-1.3L9 6 6 9 1.6 4.7C.4 7.1.9 10.1 2.9 12.1c1.9 1.9 4.6 2.4 6.9 1.5l9.1 9.1c.4.4 1 .4 1.4 0l2.3-2.3c.5-.4.5-1.1.1-1.4z",
+Shipped:"M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"};
+const ic=k=>`<svg viewBox="0 0 24 24"><path d="${P[k]}"/></svg>`;
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const KEY="mcmodz-list";
+let mods=[],filter="hub",editId=null;
+try{mods=JSON.parse(localStorage.getItem(KEY)||"[]")}catch(e){mods=[]}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(mods))}catch(e){}if(shared&&DB)DB.doc("planner/main").set({mods}).catch(()=>{})};
+const ini=n=>n.trim().split(/\s+/).slice(0,2).map(w=>w[0]).join("").toUpperCase();
+
+function render(){
+  view();
+  const cnt=s=>mods.filter(m=>m.s===s).length;
+  const it=(k,l,i,c)=>`<button class="ni${filter===k?" on":""}" data-k="${k}">${ic(i)}<span>${l}</span>${c!=null?`<em>${c}</em>`:""}</button>`;
+  $("nav").innerHTML=`<button class="ni" data-k="search">${ic("search")}<span>Search</span></button>`+it("hub","Home","home")+it("ai","AI Creation","Idea",guest?"Locked":null)+it("code","Code Creations","Building")+it("pub","Public Mods","Shipped",guest?"Locked":null)+it("rec","Recipe Builder","Planned")+it("tex","Texture Editor","Idea")+it("anim","Animation Creator","Building")+it("part","Particle Animator","Planned")+it("jui","JSON UI Creator","Idea")+it("bld","Loot, Block, Mob","Shipped")+it("tpl","Starter Ideas","Idea")+it("mdl","Model Editor","Building")+it("lng","Language Files","Planned")+it("cow","Co-work","Planned",guest?"Locked":null)+it("scr","Seed Commands","Idea")+it("snd","Sound Builder","Building")+it("blk3","Block Viewer","Shipped")+it("All","Planner","Planned",mods.length)+"<hr>"+ST.map(s=>it(s,LBL[s],s,cnt(s))).join("");
+  const done=cnt("Shipped");
+  $("pt").textContent=mods.length?`${done} of ${mods.length} mods shipped`:"No mods yet";
+  $("pf").style.width=mods.length?done/mods.length*100+"%":"0";
+  const q=$("q").value.trim().toLowerCase();
+  const list=mods.filter(m=>(filter==="All"||m.s===filter)&&(!q||(m.n+" "+m.w+" "+m.t).toLowerCase().includes(q)));
+  $("title").textContent=q?`Results for "${$("q").value.trim()}"`:(filter==="All"?"All mods":LBL[filter]);
+  $("grid").innerHTML=list.length?list.map(m=>`<article>
+    <div class="tw"><button class="thumb" style="background:${COL[m.s]}" data-e="${m.id}" aria-label="Edit ${esc(m.n)}">${esc(ini(m.n))}</button><button class="badge" data-c="${m.id}" title="Move to next status">${m.s}</button></div>
+    <div class="info"><div class="av">${esc((m.w||"?")[0].toUpperCase())}</div><div><button class="ct" data-e="${m.id}">${esc(m.n)}</button><div class="meta">${m.w?esc(m.w):"Unassigned"}</div>${m.t?`<div class="meta">${esc(m.t)}</div>`:""}</div></div>
+  </article>`).join(""):`<div class="empty">${mods.length?"No mods match.":"No mods yet. Tap New mod to add your first one."}</div>`;
+}
+function openD(id){
+  editId=id||null;
+  const m=mods.find(x=>x.id==id)||{n:"",w:"",s:"Idea",t:""};
+  $("dn").value=m.n;$("dw").value=m.w;$("ds").value=m.s;$("dx").value=m.t;
+  $("dt").textContent=id?"Edit mod":"New mod";$("del").hidden=!id;
+  $("dlg").showModal();$("dn").focus();
+}
+$("new").onclick=()=>openD();
+$("cx").onclick=()=>$("dlg").close();
+$("del").onclick=()=>{mods=mods.filter(x=>x.id!=editId);save();$("dlg").close();render()};
+$("q").oninput=render;
+$("f").onsubmit=e=>{
+  e.preventDefault();
+  const v={n:$("dn").value.trim(),w:$("dw").value.trim(),s:$("ds").value,t:$("dx").value.trim()};
+  if(!v.n)return;
+  if(editId){Object.assign(mods.find(x=>x.id==editId),v)}else{mods.unshift({id:Date.now(),...v})}
+  save();$("dlg").close();render();
+};
+document.addEventListener("click",e=>{
+  const b=e.target.closest("button");if(!b)return;
+  if(b.dataset.k==="search"){if(!["All",...ST].includes(filter))filter="All";render();$("q").focus();return}
+  if(b.dataset.k){filter=b.dataset.k;render();return}
+  if(b.dataset.c){const m=mods.find(x=>x.id==b.dataset.c);m.s=ST[(ST.indexOf(m.s)+1)%4];save();render();return}
+  if(b.dataset.e)openD(b.dataset.e);
+});
+/* McAI + Code Creations */
+let ed="Java",cur=null,last="",fixes=[],fs={};
+try{fs=JSON.parse(localStorage.getItem("mcmodz-fs")||"null")||{"src/":"","src/ExampleMod.java":"public class ExampleMod {\n  public static void main(String[] args) {\n    System.out.println(\"Hello MCModz\");\n  }\n}\n"}}catch(e){fs={}}
+const saveFs=()=>{try{localStorage.setItem("mcmodz-fs",JSON.stringify(fs))}catch(e){}};
+function view(){
+  const V=["hub","ai","code","pub","rec","tex","anim","part","jui","bld","tpl","mdl","lng","cow","scr","snd","blk3"],lk=guest&&["ai","pub","cow"].includes(filter),h=V.includes(filter);
+  ["hd","title","grid"].forEach(i=>$(i).hidden=h);
+  V.forEach(i=>$(i).hidden=lk||filter!==i);$("lock").hidden=!lk;
+  if(filter==="pub"&&!lk)startPub();
+  if(filter==="code")draw();
+}
+function draw(){
+  const ps=Object.keys(fs).sort();
+  $("ft").innerHTML=ps.map(p=>{const q=p.replace(/\/$/,"").split("/"),d=q. length-1,dir=p.endsWith("/");return `<button class="fi${p===last?" on":""}" style="padding-left:${8+d*14}px" data-p="${esc(p)}">${dir?"▸ ":""}${esc(q[q.length-1])}</button>`}).join("")||"<div class='meta'>Empty. Add a file.</div>";
+  const f=cur!=null&&cur in fs;
+  const img=f&&cur.endsWith(".png");$("src").hidden=!f||img;$("hl").hidden=$("src").hidden;$("tab").hidden=!f;
+  if(f){$("tabn").textContent=cur+(img?" (image)":"");if(img){const v=fs[cur];$("errs").innerHTML=/^data:image\/png;base64,[A-Za-z0-9+\/=]+$/.test(v)?'<img src="'+v+'" width="128" height="128" style="image-rendering:pixelated">':"<div class='er'>Not a valid PNG.</div>"}else{if($("src").value!==fs[cur])$("src").value=fs[cur];paint();check()}}else $("errs").innerHTML="";
+}
+$("ft").onclick=e=>{const b=e.target.closest("button");if(!b)return;const p=b.dataset.p;last=p;if(!p.endsWith("/"))cur=p;draw()};
+function add(folder){
+  let n=$("nm").value.trim().replace(/^\/+/,"");if(!n)return;
+  if(!n.includes("/"))n=(last.endsWith("/")?last:last.slice(0,last.lastIndexOf("/")+1))+n;
+  if(folder)n=n.replace(/\/$/,"")+"/";
+  const pp=n.split("/");let a="";
+  for(let i=0;i<pp.length-1;i++){a+=pp[i]+"/";if(!(a in fs))fs[a]=""}
+  if(!folder&&!(n in fs))fs[n]="";
+  if(!folder)cur=n;
+  last=n;$("nm").value="";saveFs();draw();
+}
+$("nf").onclick=()=>add(false);$("nd").onclick=()=>add(true);
+$("nm").onkeydown=e=>{if(e.key==="Enter")add(false)};
+$("dl").onclick=()=>{if(!last)return;Object.keys(fs).forEach(p=>{if(p===last||(last.endsWith("/")&&p.startsWith(last)))delete fs[p]});if(!(cur in fs))cur=null;last="";saveFs();draw()};
+$("src").oninput=()=>{fs[cur]=$("src").value;saveFs();paint();check()};
+$("errs").onclick=e=>{if(e.target.closest("[data-ai]")){aiFix();return}const b=e.target.closest("[data-fx]");if(!b)return;fs[cur]=fixes[b.dataset.fx].fx(fs[cur]);$("src").value=fs[cur];saveFs();paint();check()};
+function scan(t,j){
+  const E=[],st=[],P={")":"(","]":"[","}":"{"},C={"(":")","[":"]","{":"}"};
+  let l=1,q=null,cm=null;
+  for(let i=0;i<t.length;i++){
+    const ch=t[i],nx=t[i+1];
+    if(ch==="\n"){
+      if(q&&q!=="`"){const k=i,qq=q;E.push({l,m:"Text opened with "+qq+" never closes.",f:"Add a closing "+qq+" at the end of the line.",fx:s=>s.slice(0,k)+qq+s.slice(k)});q=null}
+      if(cm==="//")cm=null;
+      l++;continue}
+    if(cm){if(cm==="/*"&&ch==="*"&&nx==="/"){cm=null;i++}continue}
+    if(q){if(ch==="\\")i++;else if(ch===q)q=null;continue}
+    if(ch==="/"&&nx==="/"){cm="//";i++;continue}
+    if(ch==="/"&&nx==="*"){cm="/*";i++;continue}
+    if(ch==='"'||ch==="'"||(j&&ch==="`")){q=ch;continue}
+    if(C[ch])st.push({ch,l});
+    else if(P[ch]){const o=st.pop();if(!o||o.ch!==P[ch]){const k=i;E.push({l,m:"Unexpected "+ch+" with nothing to close.",f:"Remove this "+ch+".",fx:s=>s.slice(0,k)+s.slice(k+1)});if(o)st.push(o)}}
+  }
+  if(st.length){const cl=st.map(o=>C[o.ch]).reverse().join("");E.push({l:st[st.length-1].l,m:"Missing "+cl.split("").join(" ")+" to close what was opened here.",f:"Add "+cl+" at the end of the file.",fx:s=>s.replace(/\s*$/,"\n"+cl+"\n")})}
+  return E}
+function semi(t){
+  const L=t.split("\n"),E=[];let blk=false;
+  L.forEach((s,k)=>{
+    const x=s.replace(/\/\/.*$/,"").trim();
+    if(blk){if(x.includes("*/"))blk=false;return}
+    if(x.startsWith("/*")){if(!x.includes("*/"))blk=true;return}
+    if(!x||x[0]==="@"||x[0]==="*"||!/[\w)\]"']$/.test(x)||/^(if|else|for|while|do|try|catch|finally|switch|case|default)\b/.test(x)||/\b(class|interface|enum)\s+\w+/.test(x))return;
+    const n=(L.slice(k+1).find(z=>z.trim())||"").trim();
+    if(/^[.)\]},;?:+\-*\/&|=<>{]/.test(n)||/^(throws|extends|implements)\b/.test(n))return;
+    E.push({l:k+1,m:"This statement is missing a semicolon.",f:"Add ; at the end of the line.",fx:z=>{const a=z.split("\n");a[k]=a[k].replace(/(\s*)(\/\/.*)?$/,";$1$2");return a.join("\n")}})
+  });return E}
+function check(){
+  const t=fs[cur],ext=cur.split(".").pop().toLowerCase(),code=["java","js","mjs","ts"].includes(ext);
+  let E=[];
+  if(ext==="json"){try{JSON.parse(t)}catch(e){const m=/position (\d+)/.exec(e.message);E.push({l:m?t.slice(0,+m[1]).split("\n").length:1,m:e.message,f:"Look near this line for a missing comma, quote or bracket. JSON can't have trailing commas or comments."})}}
+  else if(code){E=scan(t,ext!=="java");if(ext==="java")E=E.concat(semi(t));E.sort((a,b)=>a.l-b.l)}
+  fixes=E;setTimeout(()=>{if(E.length&&!guest&&!$("errs").querySelector("[data-ai]"))$("errs").insertAdjacentHTML("beforeend",'<button class="aib" data-ai="1">Fix with McAI</button>')});
+  $("errs").innerHTML=E.length?E.map((e,i)=>`<div class="er"><b>Line ${e.l}:</b> ${esc(e.m)}<br>Fix: ${esc(e.f)}${e.fx?`<br><button data-fx="${i}">Apply fix</button>`:""}</div>`).join(""):`<div class="ok">${code||ext==="json"?"No syntax errors found.":"No checker for this file type."}</div>`;
+}
+function setEd(m){ed=m;["edn","cmode","rmode"].forEach(id=>[...$(id).children].forEach(x=>x.classList.toggle("on",x.dataset.ed===m)));$("nm").placeholder=m==="Java"?"Name, like src/Item.java":"Name, like BP/manifest.json"}
+$("edn").onclick=$("cmode").onclick=$("rmode").onclick=e=>{const b=e.target.closest("button");if(b)setEd(b.dataset.ed)};
+const RULES="Reply with a 2-3 sentence plain summary first (say which Minecraft version you targeted and what the player will see). Then give every file as a block: a line '=== FILE: path/to/file ===' followed by the raw file content with no code fences. End with '=== END ==='. Keep it small, use only APIs you are sure exist, and say in the summary if something needs checking.";
+const SYS={Java:"You are McAI, a Minecraft mod developer inside MCModz. Build a Minecraft: Java Edition mod using Fabric and Java. Include fabric.mod.json, the main class and any recipe, lang or loot JSON needed. "+RULES,Bedrock:"You are McAI, a Minecraft mod developer inside MCModz. Build a Minecraft: Bedrock Edition add-on: a behavior pack (manifest.json with fresh UUIDs, item, block or entity JSON, optional scripts using @minecraft/server) plus resource pack files if needed. "+RULES};
+async function build(){
+  const p=$("ap").value.trim();if(!p)return;
+  const log=$("log"),mode=ed;
+  log.insertAdjacentHTML("beforeend",`<div class="msg me">${esc(p)}</div>`);
+  $("ap").value="";
+  const out=document.createElement("div");out.className="msg";out.textContent="McAI is thinking...";log.append(out);
+  const s=window.claude?await claude.use("sample"):null;
+  if(!s){out.textContent="McAI isn't available on this page right now.";return}
+  try{
+    const pj=EM?projText():"";if(EM&&!pj){out.textContent="Select a project folder in Code Creations first.";return}const r=await s((EM?EDIT:SYS[mode])+VT(mode)+pj+HI()+"\n\nRequest: "+(hist.push(p.slice(0,200)),p),{cache:false,modelTier:$("mt").value,onText:({text})=>{out.textContent="Writing your "+mode+" mod... "+text.length+" characters"}});
+    const notes=r.text.split("=== FILE:")[0].trim();
+    const fl=[...r.text.matchAll(/=== FILE: (.+?) ===\n([\s\S]*?)(?=\n=== FILE: |\n=== END ===|$)/g)];
+    if(!fl.length){out.textContent=notes||"I couldn't build files from that. Try describing the mod in more detail.";return}
+    const slug=p.toLowerCase().replace(/[^a-z0-9]+/g,"-").slice(0,24).replace(/^-|-$/g,"")||"mod",dir=EM?PJ+"/":mode.toLowerCase()+"-"+slug+"/";
+    let first=null;
+    fl.forEach(m=>{const path=dir+m[1].trim().replace(/^\/+/,"").replace(/\.\.\//g,""),pp=path.split("/");let a="";
+      for(let i=0;i<pp.length-1;i++){a+=pp[i]+"/";if(!(a in fs))fs[a]=""}
+      fs[path]=m[2].replace(/^```\w*\n/,"").replace(/\n```\s*$/,"");first=first||path});
+    saveFs();cur=first;last=first;
+    out.innerHTML=esc(notes)+`<br><br>Made ${fl.length} file${fl.length>1?"s":""} in ${esc(dir)}<br><button data-k="code">Open in Code Creations</button>`;
+  }catch(e){out.textContent=e.code==="not_granted"?"Allow McAI to run when asked, then try again.":e.code==="rate_limited"?"McAI is busy. Wait a moment and try again.":"Something went wrong. Try again."}
+}
+/* Public mods */
+let started=false,DB=null,U=null,canW=null,meId=null,pubs=[],shT="",shF=[];
+async function startPub(){
+  if(started)return;started=true;
+  if(!window.claude){$("pnote").textContent="Public mods need the claude.ai viewer.";started=false;return}
+  DB=await claude.use("db");U=await claude.use("user");
+  if(!DB){$("pnote").textContent="Sign in to claude.ai to see public mods.";started=false;return}
+  canW=U?await U.can("data.write"):null;meId=U?await U.id():null;
+  DB.collection("public").orderBy("ts","desc").limit(50).onSnapshot(async s=>{
+    pubs=s.docs.map(d=>({id:d.id,...d.data()}));
+    let ps={};try{if(U)ps=await U.profiles([...new Set(pubs.map(p=>p.by).filter(Boolean))])}catch(e){}PS=ps;
+    pubs.forEach(p=>p.name=(ps[p.by]&&ps[p.by].name)||"Someone");
+    drawPub();
+  },()=>{started=false;$("pnote").textContent="Couldn't load public mods."});
+}
+function drawPub(){
+  $("pnote").textContent=pubs.length?"":"No public mods yet. In Code Creations, pick a project folder and tap Share.";
+  $("plist").innerHTML=pubs.map((p,i)=>`<div class="pc"><b>${esc(p.title||"Untitled")}</b><div class="meta">${esc(p.mode||"")} mod by ${esc(p.name)}, ${p.files.length} files</div><div class="meta">${esc(p.desc||"")}</div><div class="row"><button data-z="${i}">Download .zip</button>${p.mode==="Bedrock"?`<button class="alt" data-z="${i}" data-pk="1">Bedrock pack</button>`:""}<button class="alt" data-cp="${i}">Copy to my files</button>${meId&&p.by===meId?`<button class="alt" data-del="${i}">Delete</button>`:""}</div></div>`).join("");
+}
+async function dl(p,pack){
+  const D=await claude.use("downloads"),Z=window.JSZip;
+  if(!D||!Z){$("pnote").textContent="Downloads aren't available here.";return}
+  let files=p.files;
+  if(pack){
+    const m=files.filter(f=>/(^|\/)manifest\.json$/.test(f[0])).map(f=>f[0].slice(0,-13)).sort((a,b)=>a.length-b.length)[0];
+    if(m===undefined){$("pnote").textContent="This mod has no manifest.json, so it can't be a pack.";return}
+    files=files.filter(f=>f[0].startsWith(m)).map(f=>[f[0].slice(m.length),f[1]]);
+  }
+  const z=new Z();files.forEach(f=>addF(z,f));
+  const slug=(p.title||"mod").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"mod";
+  try{await D.save({filename:slug+(pack?"-pack":"")+".zip",data:await z.generateAsync({type:"blob"})})}
+  catch(e){if(e.code!=="declined")$("pnote").textContent="Couldn't save the file."}
+}
+$("plist").onclick=async e=>{
+  const b=e.target.closest("button");if(!b)return;
+  const d=b.dataset;
+  if(d.z!==undefined)dl(pubs[d.z],!!d.pk);
+  else if(d.cp!==undefined){
+    const p=pubs[d.cp],dir=(p.title||"mod").toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+"-copy/";
+    fs[dir]="";
+    p.files.forEach(f=>{const path=dir+f[0],pp=path.split("/");let a="";for(let i=0;i<pp.length-1;i++){a+=pp[i]+"/";if(!(a in fs))fs[a]=""}fs[path]=f[1];cur=path;last=path});
+    saveFs();filter="code";render();
+  }else if(d.lk!==undefined){const p=pubs[d.lk],l=p.likes||[];upd(p,{likes:l.includes(meId)?l.filter(x=>x!==meId):[...l,meId]})}else if(d.del!==undefined){
+    try{await DB.collection("public").doc(pubs[d.del].id).delete()}catch(e){$("pnote").textContent="Couldn't delete that mod."}
+  }
+};
+$("sh").onclick=()=>{
+  const t=(last||cur||"").split("/")[0];
+  shF=Object.keys(fs).filter(p=>p.startsWith(t+"/")&&!p.endsWith("/")).map(p=>[p.slice(t.length+1),fs[p]]);
+  if(!t||!shF.length){$("errs").innerHTML='<div class="er">Select a project folder with files in it, then tap Share.</div>';return}
+  shT=t;$("pdt").value=t;$("pdd").value="";
+  $("pdf").textContent="Sharing "+shF.length+" file"+(shF.length>1?"s":"")+" from "+t+"/";
+  $("pd").showModal();
+};
+$("pdx").onclick=()=>$("pd").close();
+$("pdg").onclick=async()=>{
+  if(!window.claude){$("pdf").textContent="Sharing needs the claude.ai viewer.";return}
+  DB=DB||await claude.use("db");U=U||await claude.use("user");
+  if(!DB){$("pdf").textContent="Sign in to claude.ai to share.";return}
+  const me=U?await U.id():null;
+  const mode=shF.some(f=>/\.java$|fabric\.mod\.json$/.test(f[0]))?"Java":shF.some(f=>/manifest\.json$/.test(f[0]))?"Bedrock":ed;
+  const d={title:$("pdt").value.trim()||shT,desc:$("pdd").value.trim(),mode,files:shF,by:me,ts:Date.now(),tags:$("pdtg").value.split(",").map(t=>t.trim().toLowerCase().replace(/[^a-z0-9-]/g,"")).filter(Boolean).slice(0,5),likes:[],cover:$("pdcv").checked?cv.toDataURL("image/png"):""};
+  if(JSON.stringify(d).length>240000){$("pdf").textContent="This project is too big to share. Remove some files.";return}
+  try{await DB.collection("public").add(d);$("pd").close();filter="pub";render()}
+  catch(e){$("pdf").textContent=e.code==="invalid_argument"?"Only the owner and Contributors can share. Ask the owner for Contributor access.":"Couldn't share. Try again."}
+};
+/* Account, planner, tools */
+let guest=true,PS={},acct="",shared=false;
+function put(path,c){const pp=path.split("/");let a="";for(let i=0;i<pp.length-1;i++){a+=pp[i]+"/";if(!(a in fs))fs[a]=""}fs[path]=c;cur=path;last=path;saveFs()}
+function addF(z,f){const m=/^data:image\/png;base64,([A-Za-z0-9+\/=]+)$/.exec(f[1]);m?z.file(f[0],m[1],{base64:true}):z.file(f[0],f[1])}
+function hl(t){return t.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/(\/\/.*|\/\*[\s\S]*?\*\/)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|\b(public|private|protected|static|final|class|interface|enum|extends|implements|import|package|new|return|if|else|for|while|void|int|long|float|double|boolean|String|true|false|null|const|let|var|function|export|from|this|try|catch|throws)\b|\b(\d+\.?\d*)\b/g,(m,c,s,k)=>`<i class="${c?"c":s?"s":k?"k":"n"}">${m}</i>`)}
+function paint(){$("hl").innerHTML=hl(fs[cur]||"")+"\n";$("ln").textContent=Array.from({length:(fs[cur]||"").split("\n").length},(_,i)=>i+1).join("\n")}
+$("src").onscroll=()=>{$("hl").scrollTop=$("ln").scrollTop=$("src").scrollTop;$("hl").scrollLeft=$("src").scrollLeft};
+async function aiFix(){
+  const f=cur,s=window.claude?await claude.use("sample"):null;if(!s)return;
+  $("errs").insertAdjacentHTML("afterbegin",'<div class="ok">McAI is fixing this file...</div>');
+  try{
+    const r=await s("Fix the syntax errors in this Minecraft mod file ("+f+"). Errors found: "+fixes.map(e=>"line "+e.l+": "+e.m).join("; ")+". Reply with ONLY the full corrected file, no code fences, no commentary.\n\n"+fs[f],{cache:false,modelTier:$("mt").value});
+    fs[f]=r.text.replace(/^```\w*\n/,"").replace(/\n```\s*$/,"");saveFs();if(cur===f){$("src").value=fs[f];paint();check()}
+  }catch(e){$("errs").insertAdjacentHTML("afterbegin",'<div class="er">McAI couldn\'t fix that. Try again.</div>')}
+}
+async function upd(p,patch){try{await DB.doc("public/"+p.id).update(patch)}catch(e){$("pnote").textContent="Only the owner and Contributors can like mods."}}
+function drawPub(){
+  const q=$("ps").value.trim().toLowerCase();
+  const L=pubs.map((p,i)=>[p,i]).filter(([p])=>!q||(p.title+" "+(p.desc||"")+" "+p.mode+" "+(p.tags||[]).join(" ")).toLowerCase().includes(q));
+  $("pnote").textContent=L.length?"":pubs.length?"No mods match.":"No public mods yet. In Code Creations, pick a project folder and tap Share.";
+  $("plist").innerHTML=L.map(([p,i])=>{const l=p.likes||[],tg=p.tags||[];return `<div class="pc"><b>${esc(p.title||"Untitled")}</b><div class="meta">${esc(p.mode||"")} mod by ${esc((PS[p.by]&&PS[p.by].name)||p.name||"Someone")}, ${p.files.length} files</div><div class="meta">${esc(p.desc||"")}</div>${tg.length?`<div class="meta">${tg.map(t=>"#"+esc(t)).join(" ")}</div>`:""}<div class="row"><button data-z="${i}">Download .zip</button>${p.mode==="Bedrock"?`<button class="alt" data-z="${i}" data-pk="1">Bedrock pack</button>`:""}<button class="alt" data-cp="${i}">Copy to my files</button><button class="alt" data-lk="${i}">${l.includes(meId)?"Liked":"Like"} ${l.length}</button>${meId&&p.by===meId?`<button class="alt" data-del="${i}">Delete</button>`:""}</div></div>`}).join("");
+}
+$("ps").oninput=drawPub;
+async function startShared(){
+  DB=DB||await claude.use("db");U=U||await claude.use("user");
+  if(!DB)return;canW=U?await U.can("data.write"):null;if(canW===false)return;
+  shared=true;
+  DB.doc("planner/main").onSnapshot(s=>{if(!shared)return;const d=s.data();if(d&&Array.isArray(d.mods)){mods=d.mods;try{localStorage.setItem(KEY,JSON.stringify(mods))}catch(e){}render()}else if(mods.length)DB.doc("planner/main").set({mods}).catch(()=>{})},()=>{shared=false});
+}
+(async()=>{
+  try{if(window.claude){U=await claude.use("user");if(U){const m=await U.me();if(m&&m.id)acct=m.name||"your account"}}}catch(e){}
+  $("gm").textContent=acct?"Welcome back.":"No account found. To unlock AI Creation and Public Mods, ask the owner to invite your email, then sign in to claude.ai with that email and open this link again.";
+  if(acct){$("ga").hidden=false;$("ga").textContent="Continue as "+acct}
+})();
+function enter(g){guest=g;if(g)shared=false;$("gate").hidden=true;$("sh").hidden=g;$("pv").hidden=$("pl").hidden=g;$("who").textContent=g?"Guest. Tap to switch.":acct+". Tap to switch.";if(!g)startShared();render()}
+$("ga").onclick=()=>enter(false);$("gg").onclick=()=>enter(true);
+$("who").onclick=()=>{$("gate").hidden=false};$("lk").onclick=()=>{$("gate").hidden=false};
+$("sh").hidden=true;
+$("dp").onclick=async()=>{
+  const t0=(last||cur||"").split("/")[0],t=(t0+"/" in fs)?t0:"";
+  const files=Object.keys(fs).filter(p=>!p.endsWith("/")&&(!t||p.startsWith(t+"/"))).map(p=>[t?p.slice(t.length+1):p,fs[p]]);
+  const D=await claude.use("downloads"),Z=window.JSZip;
+  if(!files.length||!D||!Z){$("errs").innerHTML='<div class="er">Nothing to download, or downloads aren\'t available here.</div>';return}
+  const z=new Z();files.forEach(f=>addF(z,f));
+  try{await D.save({filename:(t||"mcmodz-project")+".zip",data:await z.generateAsync({type:"blob"})})}catch(e){}
+};
+$("rg").innerHTML=Array.from({length:9},(_,i)=>`<input data-r="${i}" placeholder="empty" aria-label="Slot ${i+1}">`).join("");
+function recipe(){
+  const q=s=>{s=s.trim();return !s?"":s.includes(":")?s:"minecraft:"+s},c=[...document.querySelectorAll("[data-r]")].map(i=>q(i.value)),map={};let n=0;
+  const pat=[0,1,2].map(r=>[0,1,2].map(k=>{const v=c[r*3+k];if(!v)return" ";if(!map[v])map[v]="ABCDEFGHI"[n++];return map[v]}).join("")).filter(r=>r.trim()),key={};
+  Object.entries(map).forEach(([v,k])=>key[k]=ed==="Java"&&jn()>=1021002?v:{item:v});
+  const mid=$("rm").value.trim()||"mymod",res=($("rr").value.trim()||"result").replace(/^.*:/,""),id=mid+":"+res,cnt=+$("rn").value||1;
+  return JSON.stringify(ed==="Java"?{type:"minecraft:crafting_shaped",pattern:pat,key,result:jn()>=1020005?{id,count:cnt}:{item:id,count:cnt}}:{format_version:"1.20.10","minecraft:recipe_shaped":{description:{identifier:id+"_recipe"},tags:["crafting_table"],pattern:pat,key,result:{item:id,count:cnt}}},null,2)+"\n"}
+$("rec").oninput=()=>$("ro").textContent=recipe();
+document.addEventListener("click",()=>{if(filter==="rec")$("ro").textContent=recipe()});
+$("ra").onclick=()=>{const mid=$("rm").value.trim()||"mymod",res=($("rr").value.trim()||"result").replace(/^.*:/,"").replace(/[^a-z0-9_]/gi,"_");put((ed==="Java"?"data/"+mid+"/"+(jn()>=1021000?"recipe":"recipes")+"/":"BP/recipes/")+res+".json",recipe());filter="code";render()};
+const cv=$("cv"),cx=cv.getContext("2d");let er=false,dn=false;
+const pt=e=>{const r=cv.getBoundingClientRect(),x=Math.floor((e.clientX-r.left)/r.width*16),y=Math.floor((e.clientY-r.top)/r.height*16);if(x<0||y<0||x>15||y>15)return;if(er)cx.clearRect(x,y,1,1);else{cx.fillStyle=$("tc").value;cx.fillRect(x,y,1,1)}};
+cv.onpointerdown=e=>{dn=true;cv.setPointerCapture(e.pointerId);pt(e)};cv.onpointermove=e=>{if(dn)pt(e)};cv.onpointerup=()=>{dn=false};
+$("te").onclick=()=>{er=!er;$("te").textContent=er?"Paint":"Eraser"};
+$("tcl").onclick=()=>cx.clearRect(0,0,16,16);
+$("tadd").onclick=()=>{const n=($("tn").value.trim()||"texture").replace(/[^a-z0-9_]/gi,"_");put((ed==="Java"?"assets/mymod/textures/item/":"RP/textures/items/")+n+".png",cv.toDataURL("image/png"));filter="code";render()};
+/* Editor, project editing, private, animation */
+let openT=[],EM=false,PJ="";
+const d0=draw;
+draw=function(){if(cur&&cur in fs&&!openT.includes(cur))openT.push(cur);openT=openT.filter(p=>p in fs);d0();$("ln").hidden=$("src").hidden;
+  $("tabs").innerHTML=openT.map(p=>`<button class="tbn${p===cur?" on":""}" data-o="${esc(p)}">${esc(p.split("/").pop())}<span data-x="${esc(p)}">x</span></button>`).join("")};
+$("tabs").onclick=e=>{const x=e.target.closest("[data-x]");if(x){const p=x.dataset.x;openT=openT.filter(q=>q!==p);if(cur===p)cur=openT[openT.length-1]||null;draw();return}const b=e.target.closest("[data-o]");if(b){cur=b.dataset.o;last=cur;draw()}};
+$("fsb").onclick=()=>{const b=$("code").classList.toggle("big");$("fsb").textContent=b?"Exit fullscreen":"Fullscreen"};
+$("em").onclick=()=>{EM=!EM;$("em").setAttribute("aria-pressed",EM)};
+const EDIT="You are McAI inside MCModz. The user has a Minecraft mod project (files below). Apply their request. Reply with a 2 sentence summary, then ONLY the files you create or change, each in full, as '=== FILE: path ===' blocks using paths relative to the project root, with no code fences. End with '=== END ==='. ";
+function projText(){const t0=(last||cur||"").split("/")[0];if(!t0||!(t0+"/" in fs))return null;PJ=t0;let t="";Object.keys(fs).filter(p=>p.startsWith(t0+"/")&&!p.endsWith("/")&&!p.endsWith(".png")).forEach(p=>{t+="\n=== FILE: "+p.slice(t0.length+1)+" ===\n"+fs[p]});return "\n\nCurrent project files:"+t.slice(0,60000)}
+const msg=t=>{$("errs").innerHTML='<div class="ok">'+esc(t)+'</div>'};
+async function pdoc(){DB=DB||await claude.use("db");U=U||await claude.use("user");if(!DB||!U)return null;const id=await U.id();return id?DB.doc("data/users/"+id+"/projects/main"):null}
+$("pv").onclick=async()=>{const d=await pdoc();if(!d){msg("Sign in to save privately.");return}if(JSON.stringify(fs).length>240000){msg("Your files are too big to save in one go.");return}try{await d.set({fs});msg("Saved privately to your account. Only you can see it.")}catch(e){msg("Couldn't save. Private saving needs Contributor access.")}};
+$("pl").onclick=async()=>{const d=await pdoc();if(!d){msg("Sign in to load your private projects.");return}try{const v=(await d.get()).data();if(!v||!v.fs){msg("Nothing saved yet.");return}fs=v.fs;cur=null;last="";openT=[];saveFs();draw()}catch(e){msg("Couldn't load.")}};
+let kf=[{t:0,p:[0,0,0],r:[0,0,0]},{t:1,p:[0,20,0],r:[0,180,0]}],tm=0,pl2=false,lt=0;
+function at(t){const k=[...kf].sort((a,b)=>a.t-b.t);if(!k.length)return{p:[0,0,0],r:[0,0,0]};if(t<=k[0].t)return k[0];const e=k[k.length-1];if(t>=e.t)return e;for(let i=0;i<k.length-1;i++){const a=k[i],b=k[i+1];if(t>=a.t&&t<=b.t){const f=(t-a.t)/(b.t-a.t||1),m=(x,y)=>x.map((v,j)=>v+(y[j]-v)*f);return{p:m(a.p,b.p),r:m(a.r,b.r)}}}return e}
+function show(){const v=at(tm);$("cube").style.transform=`translate3d(${v.p[0]*2}px,${-v.p[1]*2}px,${v.p[2]*2}px) rotateX(${v.r[0]}deg) rotateY(${v.r[1]}deg) rotateZ(${v.r[2]}deg)`;$("tt").textContent=tm.toFixed(2)+"s";$("ts").value=tm;$("rd").textContent="position "+v.p.map(n=>n.toFixed(1)).join(", ")+"   rotation "+v.r.map(n=>n.toFixed(0)).join(", ")}
+function drawKf(){$("kf").innerHTML='<div class="kr meta"><span>time</span><span>px</span><span>py</span><span>pz</span><span>rx</span><span>ry</span><span>rz</span><span></span></div>'+kf.map((k,i)=>`<div class="kr">${[k.t,...k.p,...k.r].map((v,j)=>`<input type="number" step="any" value="${v}" data-i="${i}" data-f="${j}" aria-label="Keyframe ${i+1} field ${j+1}">`).join("")}<button data-kd="${i}" aria-label="Delete keyframe">x</button></div>`).join("")}
+$("kf").oninput=e=>{const d=e.target.dataset;if(d.i===undefined)return;const k=kf[d.i],j=+d.f,v=parseFloat(e.target.value)||0;if(j===0)k.t=v;else if(j<4)k.p[j-1]=v;else k.r[j-4]=v;show()};
+$("kf").onclick=e=>{const b=e.target.closest("[data-kd]");if(!b)return;kf.splice(b.dataset.kd,1);drawKf();show()};
+$("ak").onclick=()=>{const l=kf[kf.length-1]||{t:0,p:[0,0,0],r:[0,0,0]};kf.push({t:l.t+0.5,p:[...l.p],r:[...l.r]});drawKf();show()};
+function tick(n){if(!pl2)return;tm+=(n-lt)/1000;lt=n;const L=+$("al").value||1;if(tm>L){if($("lp").checked)tm=0;else{tm=L;pl2=false;$("ap2").textContent="Play"}}show();requestAnimationFrame(tick)}
+$("ap2").onclick=()=>{pl2=!pl2;$("ap2").textContent=pl2?"Pause":"Play";if(pl2){lt=performance.now();requestAnimationFrame(tick)}};
+$("ts").oninput=()=>{tm=+$("ts").value;show()};
+$("al").oninput=()=>{$("ts").max=+$("al").value||1};
+$("aadd").onclick=()=>{const k=[...kf].sort((a,b)=>a.t-b.t),b=$("ab").value.trim()||"root",nm=($("an").value.trim()||"spin").replace(/[^a-z0-9_]/gi,"_"),key="animation.mymod."+nm,B={position:{},rotation:{}},o={format_version:"1.8.0",animations:{[key]:{loop:$("lp").checked,animation_length:+$("al").value||1,bones:{[b]:B}}}};k.forEach(f=>{const t=f.t.toFixed(2);B.position[t]=f.p;B.rotation[t]=f.r});put("RP/animations/"+nm+".animation.json",JSON.stringify(o,null,2)+"\n");filter="code";render()};
+drawKf();show();
+/* Version picker, lists from the user's version file */
+const VJ=[["Year-based (26.x)",["26.3","26.2","26.1"]],["1.21.x and 1.20.x",["1.21.11","1.21.4","1.21.1","1.21","1.20.6","1.20.4","1.20.1","1.20"]],["Older families",Array.from({length:20},(_,i)=>"1."+(19-i)+".x")],["Early development",["Beta","Alpha","Infdev","Indev","Classic"]]];
+const VB=[["Year-based (26.x)",["26.52","26.51","26.50","26.45","26.44","26.43","26.42","26.41","26.40","26.35","26.34","26.33","26.32","26.31","26.30","26.23","26.21","26.20","26.13","26.12","26.11","26.10","26.3","26.2","26.1","26.0"]],["1.x releases",["1.21.132","1.21.130","1.21.x","1.20.80","1.20.x","1.19.83","1.19.x","1.18.12","1.18.x","1.17.41","1.17.x","1.16.221","1.16.x","1.14.x","1.13.x","1.12.x","1.11.x","1.10.x","1.9.x","1.8.x","1.7.x","1.6.x","1.5.3","1.5.x","1.4.x","1.2.13","1.2.x","1.1.x","1.0.0","1.0.x"]],["MCPE alpha",Array.from({length:16},(_,i)=>"0."+(16-i)+".x")]];
+const ver={Java:"1.21.11",Bedrock:"1.21.132"};
+function fillVer(){const L=ed==="Java"?VJ:VB;document.querySelectorAll(".vsel").forEach(s=>{s.innerHTML=L.map(([g,a])=>`<optgroup label="${g}">${a.map(v=>`<option${v===ver[ed]?" selected":""}>${v}</option>`).join("")}</optgroup>`).join("")})}
+const se=setEd;setEd=function(m){se(m);fillVer()};
+document.addEventListener("change",e=>{if(e.target.classList.contains("vsel")){ver[ed]=e.target.value;document.querySelectorAll(".vsel").forEach(s=>s.value=ver[ed]);if(filter==="rec")$("ro").textContent=recipe()}});
+function VT(m){const v=ver[m];return " Target Minecraft "+m+" Edition version "+v+"."+(/^26/.test(v)?" Version numbering changed in 2026 (26.x replaced 1.22).":"")+" If you aren't sure this version supports what was asked, or you aren't sure of its APIs, say so in your summary instead of guessing."}
+function jn(){const m=ver.Java.match(/^(\d+)\.(\d+)(?:\.(\d+))?/);return m?(+m[1])*1e6+(+m[2])*1e3+(+m[3]||0):0}
+fillVer();$("ro").textContent=recipe();
+/* Warning, import, walkthrough, comments, particles, JSON UI */
+let hist=[],pend=null;
+function HI(){return hist.length?"\n\nEarlier requests in this chat: "+hist.slice(-5).join(" | "):""}
+const dl0=dl;dl=function(p,pack){pend=[p,pack];$("wc").checked=false;$("wgo").disabled=true;$("wd").showModal()};
+$("wc").onchange=()=>{$("wgo").disabled=!$("wc").checked};
+$("wx").onclick=()=>$("wd").close();
+$("wgo").onclick=()=>{$("wd").close();if(pend)dl0(...pend)};
+const STEPS=["Plan: add mods to the Planner and move them from idea to shipped.","Build: write code in Code Creations or ask McAI. Always test a mod before you share it.","Share: Public Mods lets other people download your mods. Sign in to unlock it."];let si=0;
+function stp(){$("wi").textContent="Step "+(si+1)+" of 3";$("wt").textContent=STEPS[si];$("wn").textContent=si===2?"Done":"Next"}
+$("wn").onclick=()=>{if(si<2){si++;stp()}else{try{localStorage.setItem("mcmodz-seen","1")}catch(e){}$("wk").close()}};
+const en0=enter;enter=function(g){en0(g);try{if(!localStorage.getItem("mcmodz-seen")){si=0;stp();$("wk").showModal()}}catch(e){}};
+$("im").onclick=()=>$("iz").click();
+$("iz").onchange=async()=>{
+  const f=$("iz").files[0];$("iz").value="";if(!f||!window.JSZip)return;
+  const z=await JSZip.loadAsync(f),dir=f.name.replace(/\.[^.]+$/,"").replace(/[^a-z0-9_-]/gi,"_")+"/";let n=0,sk=0;fs[dir]="";
+  for(const [name,e] of Object.entries(z.files)){
+    if(e.dir||/(^|\/)\.\.(\/|$)/.test(name))continue;
+    if(/\.png$/i.test(name))fs[dir+name]="data:image/png;base64,"+await e.async("base64");
+    else if(/\.(json|java|js|ts|mjs|mcfunction|txt|md|lang|properties|toml|mcmeta|gradle|xml|yml|yaml|cfg|material)$/i.test(name))fs[dir+name]=await e.async("string");
+    else{sk++;continue}
+    n++;const pp=(dir+name).split("/");let a="";for(let i=0;i<pp.length-1;i++){a+=pp[i]+"/";if(!(a in fs))fs[a]=""}
+  }
+  saveFs();last=dir;draw();msg("Imported "+n+" files"+(sk?", skipped "+sk+" others (sounds, jars and other binary files).":"."));
+};
+$("bk").onclick=async()=>{const D=await claude.use("downloads"),Z=window.JSZip;if(!D||!Z){msg("Downloads aren't available here.");return}const z=new Z();Object.keys(fs).filter(p=>!p.endsWith("/")).forEach(p=>addF(z,[p,fs[p]]));z.file("mcmodz-planner.json",JSON.stringify(mods,null,2));try{await D.save({filename:"mcmodz-backup.zip",data:await z.generateAsync({type:"blob"})})}catch(e){}};
+const dp0=drawPub;drawPub=function(){dp0();document.querySelectorAll("#plist .pc").forEach(c=>{const z=c.querySelector("[data-z]");if(!z)return;const i=z.dataset.z,p=pubs[i],cm=p.comments||[],rp=p.reports||[];c.insertAdjacentHTML("beforeend",cm.slice(-3).map(x=>`<div class="meta">${esc((PS[x.by]&&PS[x.by].name)||"Someone")}: ${esc(x.t)}</div>`).join("")+`<div class="row"><input class="ci" maxlength="200" placeholder="Add a comment" aria-label="Comment"><button class="alt" data-cm="${i}">Post</button><button class="alt" data-rp="${i}">${rp.includes(meId)?"Reported":"Report"}${rp.length?" ("+rp.length+")":""}</button></div>`)})};
+$("ps").oninput=drawPub;
+$("plist").addEventListener("click",e=>{const b=e.target.closest("button");if(!b)return;const d=b.dataset;
+  if(d.cm!==undefined){const p=pubs[d.cm],t=b.parentElement.querySelector("input").value.trim();if(t&&meId)upd(p,{comments:[...(p.comments||[]),{by:meId,t:t.slice(0,200)}].slice(-30)})}
+  else if(d.rp!==undefined){const p=pubs[d.rp],r=p.reports||[];if(meId&&!r.includes(meId))upd(p,{reports:[...r,meId]})}});
+const PP={rate:30,life:1.2,speed:3,grav:3,size:.15,spread:30},PD=[["rate","Spawn rate",1,100,1],["life","Lifetime (seconds)",.2,4,.1],["speed","Speed",0,8,.1],["grav","Gravity",-6,10,.1],["size","Size",.05,1,.05],["spread","Spread (degrees)",0,90,1]];
+$("ppf").innerHTML=PD.map(([k,l,a,b,s])=>`<label class="meta" style="display:block">${l}: <span id="pv_${k}">${PP[k]}</span><input type="range" data-pp="${k}" min="${a}" max="${b}" step="${s}" value="${PP[k]}" style="width:100%"></label>`).join("")+'<label class="meta">Color <input type="color" id="pcl" value="#ffb347" style="width:56px"></label>';
+$("ppf").oninput=e=>{const k=e.target.dataset.pp;if(k){PP[k]=+e.target.value;$("pv_"+k).textContent=PP[k]}};
+const px=$("pc").getContext("2d");let ps2=[],pt0=0;
+function ploop(n){const dt=Math.min((n-pt0)/1000,.05);pt0=n;
+  if(filter==="part"){
+    for(let a=PP.rate*dt+Math.random();a>=1;a--){const an=(-90+(Math.random()*2-1)*PP.spread)*Math.PI/180;ps2.push({x:180,y:200,vx:Math.cos(an)*PP.speed*30,vy:Math.sin(an)*PP.speed*30,a:0})}
+    px.clearRect(0,0,360,240);px.fillStyle=$("pcl").value;
+    ps2=ps2.filter(p=>(p.a+=dt)<PP.life);
+    ps2.forEach(p=>{p.vy+=PP.grav*30*dt;p.x+=p.vx*dt;p.y+=p.vy*dt;px.globalAlpha=1-p.a/PP.life;px.fillRect(p.x,p.y,PP.size*60,PP.size*60)});px.globalAlpha=1}
+  requestAnimationFrame(ploop)}
+requestAnimationFrame(ploop);
+$("pa").onclick=()=>{const nm=($("pn").value.trim()||"spark").replace(/[^a-z0-9_]/gi,"_"),h=$("pcl").value,col=[1,3,5].map(i=>+(parseInt(h.slice(i,i+2),16)/255).toFixed(2)),s=Math.min(5,+Math.tan(PP.spread*Math.PI/180).toFixed(2)),sz=+PP.size.toFixed(2);
+  put("RP/particles/"+nm+".json",JSON.stringify({format_version:"1.10.0",particle_effect:{description:{identifier:"mymod:"+nm,basic_render_parameters:{material:"particles_alpha",texture:"textures/particle/particles"}},components:{"minecraft:emitter_rate_steady":{spawn_rate:PP.rate,max_particles:Math.ceil(PP.rate*PP.life)+10},"minecraft:emitter_lifetime_looping":{active_time:1},"minecraft:emitter_shape_point":{direction:[`math.random(-${s},${s})`,1,`math.random(-${s},${s})`]},"minecraft:particle_lifetime_expression":{max_lifetime:PP.life},"minecraft:particle_initial_speed":PP.speed,"minecraft:particle_motion_dynamic":{linear_acceleration:[0,-PP.grav,0]},"minecraft:particle_appearance_billboard":{size:[sz,sz],facing_camera_mode:"lookat_xyz",uv:{texture_width:128,texture_height:128,uv:[0,0],uv_size:[8,8]}},"minecraft:particle_appearance_tinting":{color:[...col,1]}}}},null,2)+"\n");filter="code";render()};
+let ue=[{n:"title",t:"Quest",ty:"label",x:20,y:20,w:120,h:16,c:"#ffffff"},{n:"box",t:"",ty:"image",x:20,y:50,w:100,h:60,c:"#3a7d2a"}];
+function uPrev(){$("uis").innerHTML=ue.map(e=>`<div style="position:absolute;left:${e.x/3.2}%;top:${e.y/1.8}%;width:${e.w/3.2}%;height:${e.h/1.8}%;${e.ty==="image"?"background:":"color:"}${e.c};font-size:12px;overflow:hidden;line-height:1.1">${e.ty==="label"?esc(e.t):""}</div>`).join("")}
+function drawU(){uPrev();$("ul").innerHTML=ue.map((e,i)=>`<div class="ur"><input data-u="${i}" data-f="n" value="${esc(e.n)}" aria-label="Name"><input data-u="${i}" data-f="t" value="${esc(e.t)}" aria-label="Text">${["x","y","w","h"].map(f=>`<input type="number" data-u="${i}" data-f="${f}" value="${e[f]}" aria-label="${f}">`).join("")}<input type="color" data-u="${i}" data-f="c" value="${e.c}" aria-label="Color"><button data-ud="${i}" aria-label="Delete">x</button></div>`).join("")}
+$("ul").oninput=e=>{const d=e.target.dataset;if(d.u===undefined)return;ue[d.u][d.f]=["x","y","w","h"].includes(d.f)?(+e.target.value||0):e.target.value;uPrev()};
+$("ul").onclick=e=>{const b=e.target.closest("[data-ud]");if(b){ue.splice(b.dataset.ud,1);drawU()}};
+$("ual").onclick=()=>{ue.push({n:"label"+ue.length,t:"Text",ty:"label",x:20,y:20,w:100,h:16,c:"#ffffff"});drawU()};
+$("uab").onclick=()=>{ue.push({n:"box"+ue.length,t:"",ty:"image",x:20,y:20,w:60,h:40,c:"#3a7d2a"});drawU()};
+$("uadd").onclick=()=>{const nm=($("un").value.trim()||"my_screen").replace(/[^a-z0-9_]/gi,"_"),rgb=h=>[1,3,5].map(i=>+(parseInt(h.slice(i,i+2),16)/255).toFixed(2));
+  const controls=ue.map(e=>({[e.n.replace(/[^a-z0-9_]/gi,"_")||"el"]:Object.assign({type:e.ty,anchor_from:"top_left",anchor_to:"top_left",offset:[e.x,e.y],size:[e.w,e.h],color:rgb(e.c)},e.ty==="label"?{text:e.t}:{texture:"textures/ui/white_background"})}));
+  put("RP/ui/"+nm+".json",JSON.stringify({namespace:nm,main:{type:"panel",controls}},null,2)+"\n");filter="code";render()};
+drawU();
+/* Builders, covers, profiles */
+let bm="loot",lE=[{i:"diamond",w:1,a:1,b:3}],pfid="";
+const nid=s=>s.trim().includes(":")?s.trim():"minecraft:"+s.trim();
+const sl=s=>(s.trim()||"thing").toLowerCase().replace(/[^a-z0-9_]/g,"_");
+function drawL(){$("le").innerHTML=lE.map((e,i)=>`<div class="lr"><input data-l="${i}" data-f="i" value="${esc(e.i)}" aria-label="Item"><input type="number" data-l="${i}" data-f="w" value="${e.w}" aria-label="Weight"><input type="number" data-l="${i}" data-f="a" value="${e.a}" aria-label="Min count"><input type="number" data-l="${i}" data-f="b" value="${e.b}" aria-label="Max count"><button data-ld="${i}" aria-label="Remove">x</button></div>`).join("")}
+$("le").oninput=e=>{const d=e.target.dataset;if(d.l===undefined)return;lE[d.l][d.f]=d.f==="i"?e.target.value:+e.target.value||0;bout()};
+$("le").onclick=e=>{const b=e.target.closest("[data-ld]");if(b){lE.splice(b.dataset.ld,1);drawL();bout()}};
+$("lad").onclick=()=>{lE.push({i:"iron_ingot",w:1,a:1,b:1});drawL();bout()};
+function bgen(){
+  const J=ed==="Java",f=[];
+  if(bm==="loot"){const n=sl($("ln1").value),en=lE.map(e=>({type:J?"minecraft:item":"item",name:nid(e.i),weight:e.w,functions:[{function:J?"minecraft:set_count":"set_count",count:{min:e.a,max:e.b}}]}));
+    f.push([J?"data/mymod/"+(jn()>=1021000?"loot_table":"loot_tables")+"/"+n+".json":"BP/loot_tables/"+n+".json",{pools:[{rolls:+$("lr").value||1,entries:en}]}])}
+  else if(bm==="block"){const n=sl($("bn").value);
+    if(J)f.push(["assets/mymod/blockstates/"+n+".json",{variants:{"":{model:"mymod:block/"+n}}}],["assets/mymod/models/block/"+n+".json",{parent:"minecraft:block/cube_all",textures:{all:"mymod:block/"+n}}]);
+    else f.push(["BP/blocks/"+n+".json",{format_version:"1.20.60","minecraft:block":{description:{identifier:"mymod:"+n},components:{"minecraft:destructible_by_mining":{seconds_to_destroy:+$("bh").value||1},"minecraft:light_emission":Math.min(15,Math.max(0,+$("bl").value||0)),"minecraft:map_color":$("bc").value,"minecraft:geometry":"minecraft:geometry.full_block","minecraft:material_instances":{"*":{texture:n,render_method:"opaque"}}}}}])}
+  else if(!J){const n=sl($("mn").value),h=+$("mh").value||20;
+    f.push(["BP/entities/"+n+".json",{format_version:"1.20.80","minecraft:entity":{description:{identifier:"mymod:"+n,is_spawnable:true,is_summonable:true},components:{"minecraft:type_family":{family:["mob"]},"minecraft:health":{value:h,max:h},"minecraft:movement":{value:+$("ms").value||.25},"minecraft:collision_box":{width:.6,height:1.8},"minecraft:physics":{},"minecraft:navigation.walk":{},"minecraft:movement.basic":{},"minecraft:jump.static":{},"minecraft:behavior.random_stroll":{priority:6},"minecraft:behavior.look_at_player":{priority:7},"minecraft:attack":{damage:+$("md").value||1}}}}])}
+  return f}
+function bout(){const f=bgen();$("mj").textContent=ed==="Java"?"Java mobs need code, so ask McAI to write the entity class.":"";$("bo").textContent=f.length?f.map(x=>x[0]+"\n"+JSON.stringify(x[1],null,2)).join("\n\n"):"Nothing to show for this edition. Switch to Bedrock, or ask McAI."}
+$("bt").onclick=e=>{const b=e.target.closest("[data-bt]");if(!b)return;bm=b.dataset.bt;[...$("bt").children].forEach(x=>x.classList.toggle("on",x===b));["loot","block","mob"].forEach(k=>$("b_"+k).hidden=k!==bm);bout()};
+$("bld").oninput=bout;
+document.addEventListener("click",()=>{if(filter==="bld")bout()});
+$("badd").onclick=()=>{const f=bgen();if(!f.length)return;f.forEach(x=>put(x[0],JSON.stringify(x[1],null,2)+"\n"));filter="code";render()};
+drawL();bout();
+const dp1=drawPub;drawPub=function(){dp1();
+  document.querySelectorAll("#plist .pc").forEach(c=>{const z=c.querySelector("[data-z]");if(!z)return;const p=pubs[z.dataset.z];
+    if(pfid&&p.by!==pfid){c.remove();return}
+    if(/^data:image\/png;base64,[A-Za-z0-9+\/=]{20,8000}$/.test(p.cover||""))c.insertAdjacentHTML("afterbegin",`<img src="${p.cover}" width="64" height="64" alt="" style="image-rendering:pixelated;border-radius:8px">`);
+    if(p.by)c.querySelector(".meta").insertAdjacentHTML("beforeend",` <button class="alt" data-pf="${esc(p.by)}" style="padding:2px 10px;font-size:12px">Profile</button>`)});
+  if(pfid){const m=pubs.filter(p=>p.by===pfid);$("pnote").innerHTML=esc(((PS[pfid]&&PS[pfid].name)||"Someone")+": "+m.length+" mods, "+m.reduce((a,p)=>a+(p.likes||[]).length,0)+" likes. ")+'<button data-pf="" style="background:var(--chip);border-radius:99px;padding:2px 12px">Show all</button>'}};
+$("ps").oninput=drawPub;
+$("pub").addEventListener("click",e=>{const b=e.target.closest("[data-pf]");if(!b)return;pfid=b.dataset.pf;drawPub()});
+/* Templates, packer, model, language, pages, settings */
+const TPL=[["Ruby ore and gems","A ruby ore block that generates underground and drops ruby gems, plus a ruby gem item."],["Ruby sword and armor","A ruby sword and a full set of ruby armor, each with a crafting recipe."],["Friendly golem","A friendly golem mob that follows the player and attacks nearby hostile mobs."],["Magic wand","A wand item that makes a particle effect and shoots a small fireball when used."],["Lucky block","A lucky block that gives a random reward when mined."],["Day counter","A script that shows how many days the player has survived."]];
+$("tg").innerHTML=TPL.map(([t,d],i)=>`<button class="box" data-tp="${i}"><b>${t}</b><span>${d}</span></button>`).join("");
+$("tg").onclick=e=>{const b=e.target.closest("[data-tp]");if(!b)return;$("ap").value=TPL[b.dataset.tp][1];filter="ai";render()};
+$("pk").onclick=async()=>{
+  const t0=(last||cur||"").split("/")[0],t=(t0+"/" in fs)?t0:"",keys=Object.keys(fs).filter(p=>!p.endsWith("/")&&(!t||p.startsWith(t+"/"))),man=keys.filter(p=>/(^|\/)manifest\.json$/.test(p));
+  if(!man.length){msg("No manifest.json found. Pick Bedrock and use Starter files first.");return}
+  const bad=[];man.forEach(p=>{try{const m=JSON.parse(fs[p]);if(!m.header||!m.header.uuid||!m.modules)bad.push(p+" is missing header.uuid or modules")}catch(e){bad.push(p+" is not valid JSON")}});
+  if(bad.length){msg("Fix this first: "+bad.join("; "));return}
+  const D=await claude.use("downloads"),Z=window.JSZip;if(!D||!Z){msg("Downloads aren't available here.");return}
+  const z=new Z();keys.forEach(p=>addF(z,[t?p.slice(t.length+1):p,fs[p]]));
+  const icn=cv.toDataURL("image/png");man.forEach(p=>{const d=(t?p.slice(t.length+1):p).slice(0,-13);if(!z.file(d+"pack_icon.png"))addF(z,[d+"pack_icon.png",icn])});
+  try{await D.save({filename:(t||"addon")+".zip",data:await z.generateAsync({type:"blob"})});msg("Saved. Rename the .zip to .mcaddon to import it.")}catch(e){}
+};
+let mC=[{x:-4,y:0,z:-2,w:8,h:12,d:4},{x:-4,y:12,z:-4,w:8,h:8,d:8}];
+function mPrev(){const s=6;$("mw").innerHTML=mC.map(c=>{const W=c.w*s,H=c.h*s,D=c.d*s,f=(st,w,h)=>`<i style="position:absolute;left:${-w/2}px;top:${-h/2}px;width:${w}px;height:${h}px;border:1px solid #7ec850;background:rgba(126,200,80,.35);${st}"></i>`;
+  return `<div style="position:absolute;transform-style:preserve-3d;transform:translate3d(${(c.x+c.w/2)*s}px,${-(c.y+c.h/2-10)*s}px,${(c.z+c.d/2)*s}px)">${f(`transform:translateZ(${D/2}px)`,W,H)}${f(`transform:rotateY(180deg) translateZ(${D/2}px)`,W,H)}${f(`transform:rotateY(90deg) translateZ(${W/2}px)`,D,H)}${f(`transform:rotateY(-90deg) translateZ(${W/2}px)`,D,H)}${f(`transform:rotateX(90deg) translateZ(${H/2}px)`,W,D)}${f(`transform:rotateX(-90deg) translateZ(${H/2}px)`,W,D)}</div>`}).join("")}
+function mDraw(){mPrev();$("mc").innerHTML=mC.map((c,i)=>`<div class="kr">${["x","y","z","w","h","d"].map(f=>`<input type="number" data-m="${i}" data-f="${f}" value="${c[f]}" aria-label="${f}">`).join("")}<span></span><button data-md="${i}" aria-label="Remove cube">x</button></div>`).join("")}
+$("mc").oninput=e=>{const d=e.target.dataset;if(d.m===undefined)return;mC[d.m][d.f]=+e.target.value||0;mPrev()};
+$("mc").onclick=e=>{const b=e.target.closest("[data-md]");if(b){mC.splice(b.dataset.md,1);mDraw()}};
+$("mad").onclick=()=>{mC.push({x:0,y:0,z:0,w:4,h:4,d:4});mDraw()};
+$("mr").oninput=()=>{$("mp3").style.transform="rotateX(-20deg) rotateY("+$("mr").value+"deg)"};
+$("madd").onclick=()=>{const n=sl($("mnm").value);put("RP/models/entity/"+n+".geo.json",JSON.stringify({format_version:"1.12.0","minecraft:geometry":[{description:{identifier:"geometry.mymod."+n,texture_width:64,texture_height:64,visible_bounds_width:4,visible_bounds_height:4,visible_bounds_offset:[0,1.5,0]},bones:[{name:"root",pivot:[0,0,0],cubes:mC.map(c=>({origin:[c.x,c.y,c.z],size:[c.w,c.h,c.d],uv:[0,0]}))}]}]},null,2)+"\n");filter="code";render()};
+mDraw();
+let lL=[{k:"item.mymod.ruby",v:"Ruby"}];
+function lDraw(){$("lg").innerHTML=lL.map((l,i)=>`<div class="row2"><input data-lk="${i}" data-f="k" value="${esc(l.k)}" aria-label="Key"><input data-lk="${i}" data-f="v" value="${esc(l.v)}" aria-label="Text"><button data-ld2="${i}" aria-label="Remove">x</button></div>`).join("")}
+$("lg").oninput=e=>{const d=e.target.dataset;if(d.lk!==undefined)lL[d.lk][d.f]=e.target.value};
+$("lg").onclick=e=>{const b=e.target.closest("[data-ld2]");if(b){lL.splice(b.dataset.ld2,1);lDraw()}};
+$("lga").onclick=()=>{lL.push({k:"",v:""});lDraw()};
+$("lgx").onclick=()=>{const c=$("lc").value.trim()||"en_US",L=lL.filter(l=>l.k.trim());
+  if(ed==="Java")put("assets/mymod/lang/"+c.toLowerCase()+".json",JSON.stringify(Object.fromEntries(L.map(l=>[l.k.trim(),l.v])),null,2)+"\n");
+  else put("RP/texts/"+c+".lang",L.map(l=>l.k.trim()+"="+l.v).join("\n")+"\n");
+  filter="code";render()};
+lDraw();
+const dp2=drawPub;drawPub=function(){dp2();document.querySelectorAll("#plist .pc").forEach(c=>{const z=c.querySelector("[data-z]");if(z)z.parentElement.insertAdjacentHTML("beforeend",`<button class="alt" data-pg="${z.dataset.z}">Open page</button>`)})};
+$("ps").oninput=drawPub;
+$("pub").addEventListener("click",e=>{const b=e.target.closest("[data-pg]");if(!b)return;const p=pubs[b.dataset.pg],nm=id=>(PS[id]&&PS[id].name)||"Someone";
+  const f=n=>{const x=p.files.find(a=>a[0].toLowerCase()===n);return x?`<h4>${n}</h4><pre style="white-space:pre-wrap;overflow-wrap:anywhere">${esc(x[1].slice(0,4000))}</pre>`:""};
+  $("mpt").textContent=p.title||"Untitled";
+  $("mpb").innerHTML=`<div class="meta">${esc(p.mode||"")} mod by ${esc(nm(p.by))}${(p.tags||[]).length?", "+p.tags.map(t=>"#"+esc(t)).join(" "):""}</div><p>${esc(p.desc||"")}</p>${f("readme.md")}${f("changelog.md")}<h4>Files</h4><div class="meta" style="overflow-wrap:anywhere">${p.files.map(a=>esc(a[0])).join("<br>")}</div><h4>Comments</h4>${(p.comments||[]).map(x=>`<div class="meta">${esc(nm(x.by))}: ${esc(x.t)}</div>`).join("")||'<div class="meta">No comments yet.</div>'}`;
+  $("mpd").showModal()});
+$("mpx").onclick=()=>$("mpd").close();
+$("stg").onclick=()=>$("sd").showModal();$("sx").onclick=()=>$("sd").close();
+function applyS(s){document.body.style.fontSize=(s.sz||15)+"px";document.documentElement.classList.toggle("light",!!s.lt);$("sz").value=s.sz||15;$("slt").checked=!!s.lt}
+try{applyS(JSON.parse(localStorage.getItem("mcmodz-set")||"{}"))}catch(e){}
+$("sd").onchange=()=>{const s={sz:+$("sz").value,lt:$("slt").checked};try{localStorage.setItem("mcmodz-set",JSON.stringify(s))}catch(e){}applyS(s)};
+$("ap").addEventListener("keydown",e=>{if(e.key==="Enter"&&(e.ctrlKey||e.metaKey)){e.preventDefault();build()}});
+$("src").addEventListener("keydown",e=>{if(e.key==="Tab"){e.preventDefault();const t=e.target;t.setRangeText("  ",t.selectionStart,t.selectionEnd,"end");t.dispatchEvent(new Event("input"))}});
+/* Revamp, search, undo, viewer, seed, sound, co-work */
+const G=[["",["hub"]],["Plan",["All","Idea","Planned","Building","Shipped"]],["Create",["ai","tpl","code","cow"]],["Make",["rec","bld","tex","blk3","mdl","anim","part","jui","lng","snd"]],["Share",["pub"]],["Java tools",["scr"]]];
+const TL={All:["Planner","Track your mods from idea to shipped."],ai:["AI Creation","Describe a mod and McAI writes it."],tpl:["Starter Ideas","Quick ideas to hand to McAI."],code:["Code Creations","Files, folders and a code editor."],cow:["Co-work","Build together with a code."],rec:["Recipes","Crafting recipes."],bld:["Loot, Block, Mob","Generate common files."],tex:["Textures","Draw 16x16 icons."],blk3:["Block Viewer","See a block in 3D."],mdl:["Model Editor","Cubes and geometry."],anim:["Animations","Keyframes and a preview."],part:["Particles","Tune and preview effects."],jui:["JSON UI","Design game screens."],lng:["Language Files","In-game names."],snd:["Sounds","Register sounds."],pub:["Public Mods","Browse and download mods."],scr:["Seed Commands","Build SeedCracker commands."]};
+$("hub").innerHTML='<h2>MCModz</h2><div class="meta">Pick a tool to start.</div>'+G.map(([t,ks])=>{const l=ks.filter(k=>TL[k]);return l.length?`<div class="hg">${t}</div><div class="boxes">${l.map(k=>`<button class="box" data-k="${k}"><b>${TL[k][0]}</b><span>${TL[k][1]}</span></button>`).join("")}</div>`:""}).join("");
+const r0=render;render=function(){r0();const n=$("nav"),B={};n.querySelectorAll("[data-k]").forEach(b=>B[b.dataset.k]=b);n.innerHTML="";if(B.search)n.append(B.search);G.forEach(([t,ks])=>{const l=ks.filter(k=>B[k]);if(!l.length)return;if(t)n.insertAdjacentHTML("beforeend",`<div class="gl">${t}</div>`);l.forEach(k=>n.append(B[k]))})};
+$("q").oninput=render;
+(()=>{const mo=document.createElement("details");mo.className="more";mo.innerHTML='<summary>More</summary><div class="tb"></div>';["st","dp","im","bk","pk","pv","pl","sh","fsb"].forEach(id=>mo.lastChild.append($(id)));document.querySelector(".tree .tb").after(mo)})();
+const H={};let hT=0;
+function hpush(){const t=fs[cur];if(t==null)return;const h=H[cur]||(H[cur]={a:[t],i:0});if(h.a[h.i]===t)return;const n=Date.now();if(n-hT<600&&h.i===h.a.length-1&&h.a.length>1)h.a[h.i]=t;else{h.a.length=h.i+1;h.a.push(t);if(h.a.length>100)h.a.shift();h.i=h.a.length-1}hT=n}
+const pa0=paint;paint=function(){pa0();hpush()};
+function hgo(d){const h=H[cur];if(!h)return;const j=h.i+d;if(j<0||j>=h.a.length)return;h.i=j;fs[cur]=h.a[j];$("src").value=fs[cur];saveFs();pa0();check()}
+$("un2").onclick=()=>hgo(-1);$("rd2").onclick=()=>hgo(1);
+$("src").addEventListener("keydown",e=>{const k=e.key.toLowerCase();if((e.ctrlKey||e.metaKey)&&k==="z"){e.preventDefault();hgo(e.shiftKey?1:-1)}else if((e.ctrlKey||e.metaKey)&&k==="y"){e.preventDefault();hgo(1)}});
+$("fq").oninput=()=>{const q=$("fq").value.trim().toLowerCase(),R=[];
+  if(q.length>1)Object.keys(fs).filter(p=>!p.endsWith("/")&&!/\.png$/i.test(p)).forEach(p=>fs[p].split("\n").forEach((l,i)=>{if(R.length<40&&l.toLowerCase().includes(q))R.push([p,i+1,l.trim().slice(0,60)])}));
+  $("fr").innerHTML=R.map(r=>`<button class="fi" data-sp="${esc(r[0])}" data-sl="${r[1]}">${esc(r[0].split("/").pop())}:${r[1]} ${esc(r[2])}</button>`).join("")+(q.length>1&&!R.length?'<div class="meta">No matches.</div>':"")};
+$("fr").onclick=e=>{const b=e.target.closest("[data-sp]");if(!b)return;cur=b.dataset.sp;last=cur;draw();const L=+b.dataset.sl,s=$("src");s.focus();const pos=fs[cur].split("\n").slice(0,L-1).join("\n").length+(L>1?1:0);s.setSelectionRange(pos,pos);s.scrollTop=Math.max(0,(L-4)*22.4)};
+let bAng=-30,wasB=false;
+function bFill(){["bsT","bsS","bsB"].forEach(id=>{const v=$(id).value;$(id).innerHTML='<option value="">None</option><option value="__d">Texture Editor drawing</option>'+Object.keys(fs).filter(p=>/\.png$/i.test(p)).map(p=>`<option value="${esc(p)}">${esc(p)}</option>`).join("");$(id).value=v})}
+function bTex(v){if(v==="__d")return cv.toDataURL("image/png");const t=fs[v]||"";return /^data:image\/png;base64,[A-Za-z0-9+\/=]+$/.test(t)?t:""}
+function bShow(){const t=bTex($("bsT").value),s=bTex($("bsS").value),b=bTex($("bsB").value),f=[s,s,s,s,t,b];[...$("bc3").children].forEach((e,i)=>e.style.backgroundImage=f[i]?`url(${f[i]})`:"none")}
+$("blk3").onchange=bShow;
+function bloop(){const on=filter==="blk3";if(on&&!wasB){bFill();bShow()}wasB=on;if(on&&$("bsp").checked){bAng=(bAng+.6)%360;$("bp").style.transform=`rotateX(-20deg) rotateY(${bAng}deg)`}requestAnimationFrame(bloop)}
+requestAnimationFrame(bloop);
+const SC=[["Turn a finder on","/seedcracker finder type {v} true","Finder name"],["Turn a finder off","/seedcracker finder type {v} false","Finder name"],["Show collected data bits","/seedcracker data bits",""],["Clear collected data","/seedcracker data clear",""],["Restore cleared data","/seedcracker data restore",""],["Outline mode","/seedcracker render outline {v}","ON, OFF or XRAY"],["Animation","/seedcracker animation {v}","ON or OFF"]];
+$("sca").innerHTML=SC.map((c,i)=>`<option value="${i}">${c[0]}</option>`).join("");
+function scU(){const c=SC[+$("sca").value];$("scl").hidden=!c[2];$("scv").placeholder=c[2];$("sco").textContent=c[1].replace("{v}",$("scv").value.trim()||"<value>")}
+$("scr").oninput=scU;$("scr").onchange=scU;scU();
+$("scc").onclick=async()=>{try{await navigator.clipboard.writeText($("sco").textContent);$("scc").textContent="Copied"}catch(e){$("scc").textContent="Select the text to copy"}setTimeout(()=>$("scc").textContent="Copy",1500)};
+let sE=[{e:"ruby_hit",f:"ruby_hit"}];
+function sNote(){$("sgn").textContent="Put your .ogg files in "+(ed==="Java"?"assets/mymod/sounds/":"RP/sounds/mymod/")+" using the file names above."}
+function sDraw(){$("sg").innerHTML=sE.map((s,i)=>`<div class="row2"><input data-sk="${i}" data-f="e" value="${esc(s.e)}" aria-label="Event name"><input data-sk="${i}" data-f="f" value="${esc(s.f)}" aria-label="File name"><button data-sd="${i}" aria-label="Remove">x</button></div>`).join("");sNote()}
+$("sg").oninput=e=>{const d=e.target.dataset;if(d.sk!==undefined)sE[d.sk][d.f]=e.target.value};
+$("sg").onclick=e=>{const b=e.target.closest("[data-sd]");if(b){sE.splice(b.dataset.sd,1);sDraw()}};
+$("sga").onclick=()=>{sE.push({e:"",f:""});sDraw()};
+document.addEventListener("click",()=>{if(filter==="snd")sNote()});
+$("sgx").onclick=()=>{const L=sE.filter(s=>s.e.trim()&&s.f.trim()),J=ed==="Java",o={};
+  if(J){L.forEach(s=>o[sl(s.e)]={sounds:["mymod:"+sl(s.f)]});put("assets/mymod/sounds.json",JSON.stringify(o,null,2)+"\n")}
+  else{L.forEach(s=>o["mymod."+sl(s.e)]={category:"neutral",sounds:["sounds/mymod/"+sl(s.f)]});put("RP/sounds/sound_definitions.json",JSON.stringify({format_version:"1.14.0",sound_definitions:o},null,2)+"\n")}
+  filter="code";render()};
+sDraw();
+let cwC="",cwU=null;const cwL={};
+const hx=p=>Array.from(new TextEncoder().encode(p)).map(b=>b.toString(16).padStart(2,"0")).join("");
+const cwSt=t=>{$("cws").textContent=t};
+async function cwPut(p,del){cwL[p]=del?undefined:fs[p];await DB.doc("coop/"+cwC+"/files/"+hx(p)).set(del?{p,del:true,by:meId,t:Date.now()}:{p,c:fs[p],by:meId,t:Date.now()})}
+async function cwGo(code,host){
+  DB=DB||await claude.use("db");U=U||await claude.use("user");
+  if(!DB||!U){cwSt("Sign in to claude.ai to co-work.");return}
+  meId=meId||await U.id();if(!meId){cwSt("Couldn't find your account.");return}
+  cwC=code;
+  try{
+    if(host){for(const p of Object.keys(fs)){if(!p.endsWith("/")&&fs[p].length<200000)await cwPut(p)}}
+    else Object.keys(fs).forEach(p=>{cwL[p]=fs[p]});
+  }catch(e){cwC="";cwSt("Couldn't start. Co-work needs Contributor access.");return}
+  if(cwU)cwU();
+  cwU=DB.collection("coop/"+code+"/files").onSnapshot(s=>{let ch=false;s.docChanges().forEach(c=>{if(c.type==="removed")return;const d=c.doc.data();if(!d||d.by===meId||!d.p)return;ch=true;
+    if(d.del){delete fs[d.p];cwL[d.p]=undefined}else{fs[d.p]=d.c;cwL[d.p]=d.c;const pp=d.p.split("/");let a="";for(let i=0;i<pp.length-1;i++){a+=pp[i]+"/";if(!(a in fs))fs[a]=""}}});
+    if(ch){saveFs();if(cur&&!(cur in fs))cur=null;if(cur&&$("src").value!==fs[cur]){const s0=$("src").selectionStart;$("src").value=fs[cur];$("src").setSelectionRange(s0,s0);paint();check()}draw()}},()=>cwSt("Lost the connection to the session."));
+  $("cwl").hidden=false;cwSt(host?"Session code: "+code+". Share it with your team. Files sync every couple of seconds.":"Joined "+code+". Files sync every couple of seconds.");
+}
+$("cwh").onclick=()=>cwGo(Math.random().toString(36).slice(2,8).toUpperCase(),true);
+$("cwb").onclick=()=>{const c=$("cwj").value.trim().toUpperCase().replace(/[^A-Z0-9]/g,"");if(c.length<4){cwSt("Enter the code you were given.");return}cwGo(c,false)};
+$("cwl").onclick=()=>{if(cwU)cwU();cwU=null;cwC="";$("cwl").hidden=true;cwSt("You left the session. Your files stay on this device.")};
+setInterval(async()=>{if(!cwC||!DB)return;try{for(const p of Object.keys(fs)){if(p.endsWith("/")||fs[p].length>200000)continue;if(fs[p]!==cwL[p])await cwPut(p)}for(const p of Object.keys(cwL)){if(cwL[p]!==undefined&&!(p in fs))await cwPut(p,true)}}catch(e){cwSt("Couldn't save to the session. Co-work needs Contributor access.")}},2000);
+$("send").onclick=build;
+$("st").onclick=()=>{
+  const u=()=>crypto.randomUUID(),d=ed==="Java"?"java-starter/":"bedrock-starter/";
+  const F=ed==="Java"?{"fabric.mod.json":JSON.stringify({schemaVersion:1,id:"examplemod",version:"1.0.0",name:"Example Mod",entrypoints:{main:["com.example.ExampleMod"]},depends:{fabricloader:">=0.15"}},null,2)+"\n","src/main/java/com/example/ExampleMod.java":"package com.example;\n\nimport net.fabricmc.api.ModInitializer;\n\npublic class ExampleMod implements ModInitializer {\n  @Override\n  public void onInitialize() {\n    System.out.println(\"Hello from MCModz\");\n  }\n}\n"}:{"BP/manifest.json":JSON.stringify({format_version:2,header:{name:"Example Add-on",description:"Made in MCModz",uuid:u(),version:[1,0,0],min_engine_version:[1,20,0]},modules:[{type:"data",uuid:u(),version:[1,0,0]}]},null,2)+"\n"};
+  Object.entries(F).forEach(([p,c])=>{const f=d+p,pp=f.split("/");let a="";for(let i=0;i<pp.length-1;i++){a+=pp[i]+"/";if(!(a in fs))fs[a]=""}fs[f]=c;cur=f;last=f});
+  saveFs();draw();
+};
+render();
+</script>
+</body>
+</html>
